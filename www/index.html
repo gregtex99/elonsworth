@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050507">
+<title>Elon's Worth — Live Net Worth Tracker</title>
+
+<meta name="description" content="Live, transparent Elon Musk net-worth tracker. Real-time math. Show your work. Estimate, not endorsement.">
+<meta property="og:title" content="Elon's Worth — Live Net Worth Tracker">
+<meta property="og:description" content="Live SPCX + TSLA math. Transparent formula. The world's first trillionaire, ticking in real time.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://elonsworth.com">
+<meta property="og:image" content="https://elonsworth.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg-0:#050507; --bg-1:#0A1A10; --bg-2:#0C0C10; --line:#1E1E24; --line-2:#232328;
+  --fg:#FFFFFF; --fg-dim:#7A7A82; --fg-faint:#5A5A62; --fg-mute:#4A4A52;
+  --green:#00FF85; --green-d:#00130A; --red:#FF5252;
+  --pill-bg:#101014;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg-0);color:var(--fg);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1) 0%, var(--bg-0) 55%);overflow-x:hidden}
+
+@keyframes ewBlink {0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes ewFlashUp {0%{color:var(--green);text-shadow:0 0 32px rgba(0,255,133,.55)}100%{color:var(--fg);text-shadow:0 0 0 rgba(0,255,133,0)}}
+@keyframes ewFlashDown {0%{color:var(--red);text-shadow:0 0 32px rgba(255,82,82,.55)}100%{color:var(--fg);text-shadow:0 0 0 rgba(255,82,82,0)}}
+@keyframes ewPulse {0%,100%{opacity:1}50%{opacity:.45}}
+.flash-up{animation:ewFlashUp 1.5s ease-out}
+.flash-down{animation:ewFlashDown 1.5s ease-out}
+
+.shell{max-width:1320px;margin:0 auto;padding:20px 22px 42px;display:flex;flex-direction:column}
+.nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:6px}
+.brand{font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:.5px}
+.live{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green)}
+.live::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);animation:ewBlink 1.6s infinite}
+.live.stale{color:#FFB300}
+.live.stale::before{background:#FFB300}
+.live.dead{color:var(--red)}
+.live.dead::before{background:var(--red)}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:10px 16px;border-radius:10px;border:1px solid var(--line-2);color:var(--fg);cursor:pointer;user-select:none;background:transparent;transition:transform .1s, opacity .1s}
+.btn:hover{opacity:.8}
+.btn:active{transform:scale(.96)}
+.btn.primary{font-size:13px;font-weight:700;letter-spacing:0;padding:10px 20px;border:0;background:var(--green);color:var(--green-d)}
+.btn.muted{color:var(--fg-dim);border-color:var(--line)}
+.link-pill{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--fg-dim);text-decoration:none;border-bottom:1px dashed transparent;padding-bottom:1px}
+.link-pill:hover{color:var(--fg);border-color:var(--fg-dim)}
+
+.hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--green);border:1px solid rgba(0,255,133,.35);border-radius:999px;padding:6px 14px;display:inline-block;margin-top:24px}
+
+.hero-grid{display:grid;grid-template-columns:1fr 360px;gap:44px;margin-top:24px}
+.hero-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim)}
+.hero-number{font-family:'Archivo Black',sans-serif;font-size:clamp(48px,10vw,96px);line-height:1;letter-spacing:-2px;margin-top:14px;white-space:nowrap;cursor:pointer;user-select:none}
+.hero-delta-row{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.delta{font-size:19px;font-weight:700}
+.delta.up{color:var(--green)}
+.delta.down{color:var(--red)}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 12px;border-radius:999px;background:var(--pill-bg);border:1px solid var(--line-2)}
+.chip .pct.up{color:var(--green)}
+.chip .pct.down{color:var(--red)}
+
+/* spark */
+.spark-wrap{margin-top:32px}
+.spark{width:100%;height:140px;display:block}
+.spark-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-faint);margin-top:8px}
+
+/* tabs */
+.tabs{display:flex;gap:26px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;margin-top:18px;padding-bottom:6px}
+.tabs span{color:var(--fg-faint);cursor:pointer;padding-bottom:5px}
+.tabs span.active{color:var(--green);border-bottom:2px solid var(--green)}
+
+/* rail */
+.rail{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:22px}
+.card-h{display:flex;justify-content:space-between;align-items:center}
+.card-h .label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim)}
+.card-h .total{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green)}
+.alloc-bar{display:flex;height:10px;border-radius:3px;overflow:hidden;margin-top:14px;gap:2px}
+.alloc-bar div{height:100%}
+.holdings-list{display:flex;flex-direction:column;margin-top:6px}
+.holding{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #1A1A20}
+.holding:last-child{border-bottom:0}
+.swatch{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.holding-body{flex:1;min-width:0}
+.holding-name-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.holding-name{font-size:13.5px;font-weight:700}
+.holding-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--green);letter-spacing:1px}
+.holding-badge.lock{color:#FFB300}
+.holding-sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
+.holding-val{text-align:right}
+.holding-val .v{font-family:'IBM Plex Mono',monospace;font-size:13px}
+.holding-val .p{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
+
+.lockup-num{font-family:'Archivo Black',sans-serif;font-size:34px;color:#FFB300}
+.lockup-bar{height:8px;background:#16161A;border-radius:4px;overflow:hidden;margin-top:14px}
+.lockup-bar > div{height:100%;background:#FFB300;animation:ewPulse 1.6s ease-in-out infinite}
+.lockup-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6A6A72;margin-top:10px}
+
+.footer{margin-top:42px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--fg-mute);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.footer a{color:var(--fg-dim);text-decoration:none}
+
+#math-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;backdrop-filter:blur(6px)}
+#math-modal.open{display:flex}
+.math-card{background:var(--bg-2);border:1px solid var(--line);border-radius:18px;max-width:760px;width:100%;padding:32px;color:var(--fg);font-family:'Space Grotesk',sans-serif}
+.math-card h2{font-family:'Archivo Black',sans-serif;font-size:28px;margin:0 0 6px;letter-spacing:-.5px}
+.math-card h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim);margin:28px 0 12px;text-transform:uppercase}
+.math-card p{line-height:1.55;color:#C5C5CB;margin:8px 0;font-size:14px}
+.math-card .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:13px}
+.math-card .row:last-child{border-bottom:0}
+.math-card .row .label{color:var(--fg-dim)}
+.math-card .row .val{color:var(--fg);text-align:right}
+.math-card .close{position:absolute;top:12px;right:14px;font-size:18px;color:var(--fg-dim);cursor:pointer;background:transparent;border:0}
+.math-card pre{background:#0A0A0C;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C5C5CB;line-height:1.55}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:all .25s ease;z-index:1001;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MOBILE */
+@media (max-width:720px){
+  .shell{padding:14px 14px 32px}
+  .hero-grid{grid-template-columns:1fr;gap:24px}
+  .hero-number{font-size:clamp(46px,15vw,80px)}
+  .nav-right .btn:not(.primary){display:none}
+  .rail{order:2}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <nav class="nav">
+    <span class="brand">ELON'S WORTH</span>
+    <span class="live" id="live-dot"><span id="live-text">LIVE</span></span>
+    <span class="link-pill" id="clock-display"></span>
+    <div class="nav-right">
+      <a class="link-pill" href="#" onclick="openMath();return false">/math</a>
+      <button class="btn muted" id="sound-btn" onclick="toggleSound()">🔇 SOUND OFF</button>
+      <button class="btn primary" id="share-btn" onclick="share()">SHARE NUMBER</button>
+    </div>
+  </nav>
+
+  <div class="hero-eyebrow" id="eyebrow">SPCX IPO'D TODAY · HE'S WORTH</div>
+
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">ELON MUSK · NET WORTH · USD</div>
+      <div class="hero-number" id="hero" onclick="onHeroTap()">$0</div>
+
+      <div class="hero-delta-row">
+        <span class="delta" id="delta">▲ $0 (0.00%) Today</span>
+        <span class="chip">TSLA <span id="tsla-px">$0</span> <span class="pct" id="tsla-pct">+0.00%</span></span>
+        <span class="chip">SPCX <span id="spcx-px">$0</span> <span class="pct" id="spcx-pct">+0.00%</span></span>
+      </div>
+
+      <div class="spark-wrap">
+        <svg class="spark" id="spark" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+        <div class="spark-meta">
+          <span>LO <span id="day-lo">—</span></span>
+          <span>SESSION · 1 TICK ≈ 2s</span>
+          <span>HI <span id="day-hi">—</span></span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <span class="active">LIVE</span>
+        <span>1D</span>
+        <span>1W</span>
+        <span>1M</span>
+        <span>ALL</span>
+      </div>
+    </div>
+
+    <aside class="rail">
+      <div class="card">
+        <div class="card-h">
+          <span class="label">HIS PORTFOLIO</span>
+          <span class="total" id="portfolio-total">$0B</span>
+        </div>
+        <div class="alloc-bar" id="alloc-bar"></div>
+        <div class="holdings-list" id="holdings"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <span class="label">PAPER WEALTH HE CAN'T TOUCH</span>
+          <span class="lockup-num" id="lockup-val">$0B</span>
+        </div>
+        <div class="lockup-bar"><div id="lockup-bar" style="width:100%"></div></div>
+        <div class="lockup-meta">
+          <span>SPCX LOCKUP · ENDS JUN 12 2027</span>
+          <span id="lockup-days">— DAYS LEFT</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="footer">
+    <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="#" onclick="openMath();return false">SEE THE MATH ↗</a></span>
+    <span id="stale-note">QUOTE FRESH</span>
+  </div>
+</div>
+
+<div id="math-modal" onclick="if(event.target===this)closeMath()">
+  <div class="math-card" style="position:relative">
+    <button class="close" onclick="closeMath()">✕</button>
+    <h2>THE MATH</h2>
+    <p>Every number on this page is computed from public data. Click anywhere outside to close.</p>
+
+    <h3>THE FORMULA</h3>
+    <pre id="formula">loading…</pre>
+
+    <h3>LIVE COMPONENTS</h3>
+    <div id="math-components"></div>
+
+    <h3>CONSTANTS</h3>
+    <div id="math-constants"></div>
+
+    <h3>UNVESTED 2025 TESLA AWARD (GHOST METER)</h3>
+    <p style="font-size:13px">The 2025 CEO Performance Award is 423.7M restricted shares across 12 tranches, each vesting on Tesla market-cap milestones from $2.0T to $8.5T (plus operational milestones). All <b>currently unvested</b>. If all vested at the current TSLA price, it would add <b id="ghost-val">$0B</b>.</p>
+
+    <h3>SOURCES</h3>
+    <p style="font-size:13px;line-height:1.7">
+      · SpaceX S-1 (May 20, 2026) — share counts &amp; lockup<br>
+      · Schedule 13G/A (Apr 16, 2026) — Tesla holdings<br>
+      · 2025 CEO Performance Award (shareholder-approved Nov 6, 2025)<br>
+      · Live quotes via finance feed (delayed up to 15min off-hours)
+    </p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_URL = 'https://elonsworth-quotes.absoluteio.workers.dev';
+const POLL_MS = 2000;
+const SPARK_MAX = 240;
+
+let state = {
+  history: [],
+  prev: null,
+  soundOn: false,
+  lastUpdate: 0,
+  tapCount: 0,
+};
+
+function fmtMoney(n){
+  if(n==null||!isFinite(n)) return '—';
+  if(n>=1e12) return '$'+(n/1e12).toFixed(3).replace(/\.?0+$/,'')+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
+  if(n>=1e6)  return '$'+(n/1e6).toFixed(1)+'M';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtFull(n){
+  if(n==null) return '';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtMoneyPrecise(n){
+  // Hero shows like $1,140,193,872,000 collapsed to $1.140T with cents for hype
+  if(n>=1e12) return '$'+(n/1e12).toFixed(3)+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(2)+'B';
+  return fmtMoney(n);
+}
+function fmtPct(p){
+  const sign = p>=0?'+':'';
+  return sign+p.toFixed(2)+'%';
+}
+
+const clickAudio = (() => {
+  let ctx;
+  function tick(up){
+    if(!state.soundOn) return;
+    try{
+      ctx ||= new (window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = up ? 1100 : 700;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.08, ctx.currentTime+0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.08);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime+0.09);
+    }catch(e){}
+  }
+  return { tick };
+})();
+
+function showToast(msg, ms=2200){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+function toggleSound(){
+  state.soundOn = !state.soundOn;
+  document.getElementById('sound-btn').textContent = state.soundOn ? '🔊 SOUND ON' : '🔇 SOUND OFF';
+  document.getElementById('sound-btn').style.color = state.soundOn ? 'var(--green)' : 'var(--fg-dim)';
+  if(state.soundOn) clickAudio.tick(true);
+}
+
+function share(){
+  const n = state.history[state.history.length-1]?.v;
+  if(!n) return;
+  const txt = `Elon Musk is worth ${fmtMoneyPrecise(n)} right now. Watch it tick: https://elonsworth.com`;
+  if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
+    navigator.share({ title:"Elon's Worth", text: txt, url:'https://elonsworth.com' }).catch(()=>{});
+    return;
+  }
+  navigator.clipboard.writeText(txt).then(()=>showToast('COPIED — PASTE IT ANYWHERE'));
+}
+
+function onHeroTap(){
+  state.tapCount++;
+  const n = state.history[state.history.length-1]?.v;
+  if(state.tapCount === 1 && n){
+    showToast(fmtFull(n));
+  }else if(state.tapCount === 5){
+    showToast('🥚 something is coming…');
+  }
+  clearTimeout(state._tapReset);
+  state._tapReset = setTimeout(()=>state.tapCount=0, 1800);
+}
+
+function openMath(){
+  document.getElementById('math-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+  populateMath();
+}
+function closeMath(){
+  document.getElementById('math-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function populateMath(){
+  const last = state.history[state.history.length-1];
+  if(!last) return;
+  const d = last.full;
+  if(!d) return;
+
+  document.getElementById('formula').textContent =
+`live = TSLA × 413,200,000                                  (Revocable Trust)
+     + max(0, TSLA - 23.34) × 304,000,000                  (2018 award, exercisable)
+     + max(0, TSLA - 334.09) × 35,311,992 × vested         (2025 award; 0/12 vested)
+     + SPCX × 5,250,000,000                                (~42% of 12.5B outstanding)
+     + private holdings  (Boring + Neuralink + cash, est)
+     − liabilities       (margin loans, est)`;
+
+  const comp = d.components;
+  const rows = [
+    ['Tesla — Trust shares', comp.tsla_trust],
+    ['Tesla — 2018 options (intrinsic)', comp.tsla_2018_options],
+    ['Tesla — 2025 award (vested only)', comp.tsla_2025_award_vested],
+    ['SpaceX (SPCX) equity', comp.spcx],
+    ['Private (Boring + Neuralink + cash, est)', comp.private_holdings],
+    ['Liabilities (margin, est)', comp.liabilities],
+    ['LIVE NET WORTH', d.net_worth],
+  ];
+  document.getElementById('math-components').innerHTML = rows.map(([l,v])=>
+    `<div class="row"><span class="label">${l}</span><span class="val">${v<0?'-':''}${fmtMoney(Math.abs(v))}</span></div>`
+  ).join('');
+
+  const c = d.constants;
+  const csts = [
+    ['TSLA trust shares', c.TSLA.trust_shares.toLocaleString()],
+    ['TSLA 2018 award options', c.TSLA.options_2018_shares.toLocaleString()+' @ $'+c.TSLA.options_2018_strike+' strike'],
+    ['TSLA 2025 award', c.TSLA.award_2025_shares_per_tranche.toLocaleString()+' × '+c.TSLA.award_2025_tranches_total+' tranches @ $'+c.TSLA.award_2025_offset+' offset'],
+    ['SPCX total shares outstanding', c.SPCX.total_shares_outstanding.toLocaleString()],
+    ['Musk SPCX economic stake', (c.SPCX.musk_economic_pct*100).toFixed(1)+'% = '+c.SPCX.musk_shares.toLocaleString()+' shares'],
+    ['SPCX Musk lockup ends', c.SPCX.musk_lockup_end+' (366 days, no early release)'],
+  ];
+  document.getElementById('math-constants').innerHTML = csts.map(([l,v])=>
+    `<div class="row"><span class="label">${l}</span><span class="val">${v}</span></div>`
+  ).join('');
+
+  document.getElementById('ghost-val').textContent = fmtMoney(d.unvested_award_potential);
+}
+
+function paintSpark(){
+  const svg = document.getElementById('spark');
+  const W = 1000, H = 200, pad = 10;
+  if(state.history.length < 2){ svg.innerHTML=''; return; }
+  const vals = state.history.map(p=>p.v);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const range = (mx-mn) || 1;
+  const pts = state.history.map((p,i)=>{
+    const x = pad + (i/(state.history.length-1)) * (W-pad*2);
+    const y = pad + (1 - (p.v-mn)/range) * (H-pad*2);
+    return [x,y];
+  });
+  const line = pts.map(([x,y],i)=>(i?`L${x.toFixed(1)},${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+  const area = `${line} L${pts[pts.length-1][0]},${H} L${pts[0][0]},${H} Z`;
+  const last = pts[pts.length-1];
+  const up = state.history[state.history.length-1].v >= state.history[0].v;
+  const color = up ? 'var(--green)' : 'var(--red)';
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${up?'#00FF85':'#FF5252'}" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="${up?'#00FF85':'#FF5252'}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#sparkFill)"/>
+    <path d="${line}" stroke="${up?'#00FF85':'#FF5252'}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${up?'#00FF85':'#FF5252'}"/>
+  `;
+}
+
+function paintHoldings(d){
+  const C = d.constants;
+  const comp = d.components;
+  const total = comp.tsla_trust + comp.tsla_2018_options + Math.max(0,comp.tsla_2025_award_vested) + comp.spcx + comp.private_holdings;
+  const lockedSpcx = d.spcx_lockup.paper_locked;
+  const tslaTotal = comp.tsla_trust + comp.tsla_2018_options + Math.max(0,comp.tsla_2025_award_vested);
+
+  const items = [
+    {name:'SpaceX (SPCX)', sub:`${(C.SPCX.musk_economic_pct*100).toFixed(0)}% stake · ~5.25B shares`, val:comp.spcx, color:'#00FF85', badge:'PUBLIC', lock:false},
+    {name:'Tesla (TSLA)',  sub:`717M shares + options · 20.3%`, val:tslaTotal,  color:'#00B868', badge:'PUBLIC', lock:false},
+    {name:'Private holdings', sub:'Boring + Neuralink + cash', val:comp.private_holdings, color:'#0A9A5C', badge:'EST',    lock:false},
+  ];
+  const portfolioTotal = total;
+
+  document.getElementById('portfolio-total').textContent = fmtMoney(portfolioTotal);
+
+  document.getElementById('alloc-bar').innerHTML =
+    items.map(i=>`<div style="width:${(i.val/portfolioTotal*100).toFixed(2)}%;background:${i.color}"></div>`).join('');
+
+  document.getElementById('holdings').innerHTML =
+    items.map(i=>{
+      const pct = (i.val/portfolioTotal*100).toFixed(1)+'%';
+      return `<div class="holding">
+        <div class="swatch" style="background:${i.color}"></div>
+        <div class="holding-body">
+          <div class="holding-name-row">
+            <span class="holding-name">${i.name}</span>
+            <span class="holding-badge${i.lock?' lock':''}">${i.badge}</span>
+          </div>
+          <div class="holding-sub">${i.sub}</div>
+        </div>
+        <div class="holding-val">
+          <div class="v">${fmtMoney(i.val)}</div>
+          <div class="p">${pct}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  document.getElementById('lockup-val').textContent = fmtMoney(lockedSpcx);
+  const end = new Date('2027-06-12T00:00:00Z');
+  const days = Math.max(0, Math.ceil((end - Date.now())/86400000));
+  document.getElementById('lockup-days').textContent = days+' DAYS LEFT';
+}
+
+function paintChips(d){
+  const tsla = d.quotes.TSLA;
+  const spcx = d.quotes.SPCX;
+  const tPct = (tsla.p - tsla.prev) / tsla.prev * 100;
+  const sPct = (spcx.p - spcx.prev) / spcx.prev * 100;
+  document.getElementById('tsla-px').textContent = '$'+tsla.p.toFixed(2);
+  document.getElementById('tsla-pct').textContent = fmtPct(tPct);
+  document.getElementById('tsla-pct').className = 'pct ' + (tPct>=0?'up':'down');
+  document.getElementById('spcx-px').textContent = '$'+spcx.p.toFixed(2);
+  document.getElementById('spcx-pct').textContent = fmtPct(sPct);
+  document.getElementById('spcx-pct').className = 'pct ' + (sPct>=0?'up':'down');
+  document.getElementById('day-lo').textContent = fmtMoney(state.history.reduce((a,p)=>Math.min(a,p.v), Infinity));
+  document.getElementById('day-hi').textContent = fmtMoney(state.history.reduce((a,p)=>Math.max(a,p.v), -Infinity));
+}
+
+function paintHero(n, prev){
+  const hero = document.getElementById('hero');
+  hero.textContent = fmtMoneyPrecise(n);
+  hero.classList.remove('flash-up','flash-down');
+  if(prev!=null){
+    if(n>prev){ hero.classList.add('flash-up'); clickAudio.tick(true); }
+    else if(n<prev){ hero.classList.add('flash-down'); clickAudio.tick(false); }
+  }
+  // delta vs previous day open (approx from prev close TSLA + SPCX)
+  // We compute it as: net worth at current quotes vs net worth at prev-close quotes
+}
+
+function paintDelta(d){
+  const C = d.constants;
+  // Net worth at previous close
+  const T = d.quotes.TSLA.prev, S = d.quotes.SPCX.prev;
+  const prevWorth =
+      C.TSLA.trust_shares * T
+    + C.TSLA.options_2018_shares * Math.max(0, T - C.TSLA.options_2018_strike)
+    + C.SPCX.musk_shares * S
+    + (C.PRIVATE.boring_company_est + C.PRIVATE.neuralink_est + C.PRIVATE.cash_residual_est)
+    - C.LIABILITIES.margin_loans_est;
+  const diff = d.net_worth - prevWorth;
+  const pct = diff / prevWorth * 100;
+  const el = document.getElementById('delta');
+  const arrow = diff>=0 ? '▲' : '▼';
+  el.textContent = `${arrow} ${fmtMoney(Math.abs(diff))} (${fmtPct(pct)}) Today`;
+  el.className = 'delta ' + (diff>=0?'up':'down');
+}
+
+async function tick(){
+  try {
+    const r = await fetch(API_URL + '/api/net-worth', {cache:'no-store'});
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+
+    const n = d.net_worth;
+    const prev = state.history[state.history.length-1]?.v;
+    state.history.push({ t: Date.now(), v: n, full: d });
+    if(state.history.length > SPARK_MAX) state.history.shift();
+    state.lastUpdate = Date.now();
+
+    paintHero(n, prev);
+    paintDelta(d);
+    paintChips(d);
+    paintHoldings(d);
+    paintSpark();
+
+    // live status
+    const ageS = (Date.now()/1000 - d.asof);
+    const dot = document.getElementById('live-dot');
+    const txt = document.getElementById('live-text');
+    document.getElementById('stale-note').textContent =
+      ageS < 60 ? 'QUOTE FRESH' : `Last quote ${Math.round(ageS/60)}min old · feed cached`;
+    if(ageS < 90){ dot.classList.remove('stale','dead'); txt.textContent='LIVE'; }
+    else if(ageS < 60*30){ dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent='DELAYED'; }
+    else { dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent='CACHED'; }
+
+    if(document.getElementById('math-modal').classList.contains('open')) populateMath();
+
+  } catch(e) {
+    console.error('tick fail', e);
+    document.getElementById('live-dot').classList.add('dead');
+    document.getElementById('live-text').textContent='OFFLINE';
+  }
+}
+
+function clockTick(){
+  const d = new Date();
+  const fmt = d.toLocaleTimeString('en-US',{timeZone:'America/New_York', hour12:false}) + ' ET';
+  document.getElementById('clock-display').textContent = fmt;
+}
+
+setInterval(tick, POLL_MS);
+setInterval(clockTick, 1000);
+clockTick();
+tick();
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMath(); });
+</script>
+</body>
+</html>
