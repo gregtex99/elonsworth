@@ -12,7 +12,21 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://elonsworth.com">
 <meta property="og:image" content="https://elonsworth.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Live Elon Musk net worth: $1.140 trillion and counting">
+<meta property="og:site_name" content="Elon's Worth">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Elon's Worth — Live Net Worth Tracker">
+<meta name="twitter:description" content="Live SPCX + TSLA math. The world's first trillionaire, ticking in real time.">
+<meta name="twitter:image" content="https://elonsworth.com/og.png">
+<meta name="twitter:image:alt" content="Live Elon Musk net worth: $1.140 trillion and counting">
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="canonical" href="https://elonsworth.com/">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +77,8 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .delta{font-size:19px;font-weight:700}
 .delta.up{color:var(--green)}
 .delta.down{color:var(--red)}
-.chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 12px;border-radius:999px;background:var(--pill-bg);border:1px solid var(--line-2)}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 12px;border-radius:999px;background:var(--pill-bg);border:1px solid var(--line-2);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip > span{white-space:nowrap}
 .chip .pct.up{color:var(--green)}
 .chip .pct.down{color:var(--red)}
 
@@ -86,6 +101,8 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .alloc-bar{display:flex;height:10px;border-radius:3px;overflow:hidden;margin-top:14px;gap:2px}
 .alloc-bar div{height:100%}
 .holdings-list{display:flex;flex-direction:column;margin-top:6px}
+.holding-liab{border-top:1px dashed var(--line);padding-top:10px;margin-top:4px}
+.holding-net{border-top:1px solid rgba(0,255,133,.25);padding-top:12px;margin-top:4px;background:linear-gradient(0deg, rgba(0,255,133,.04), transparent)}
 .holding{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #1A1A20}
 .holding:last-child{border-bottom:0}
 .swatch{width:9px;height:9px;border-radius:2px;flex-shrink:0}
@@ -95,8 +112,8 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .holding-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--green);letter-spacing:1px}
 .holding-badge.lock{color:#FFB300}
 .holding-sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
-.holding-val{text-align:right}
-.holding-val .v{font-family:'IBM Plex Mono',monospace;font-size:13px}
+.holding-val{text-align:right;white-space:nowrap;flex-shrink:0}
+.holding-val .v{font-family:'IBM Plex Mono',monospace;font-size:13px;white-space:nowrap}
 .holding-val .p{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
 
 .lockup-num{font-family:'Archivo Black',sans-serif;font-size:34px;color:#FFB300}
@@ -174,13 +191,39 @@ body.math-route #math-page{display:block}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:all .25s ease;z-index:1001;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ATH card */
+.ath-card{background:linear-gradient(180deg, rgba(0,255,133,.04) 0%, transparent 60%), var(--bg-2)}
+.ath-card .total{color:var(--green)}
+.ath-card.is-fresh{border-color:rgba(0,255,133,.4); box-shadow:0 0 0 1px rgba(0,255,133,.18), 0 0 32px -8px rgba(0,255,133,.35)}
+.ath-card.is-fresh .total{animation:ewPulse 1.6s ease-in-out infinite}
+.ath-num{font-family:'Archivo Black',sans-serif;font-size:34px;color:var(--green);margin-top:14px;letter-spacing:-0.02em;line-height:1}
+.ath-bar{height:8px;background:#16161A;border-radius:4px;overflow:hidden;margin-top:14px;position:relative}
+.ath-bar > div{height:100%;background:linear-gradient(90deg, #00B868 0%, #00FF85 100%);transition:width .6s cubic-bezier(.2,.7,.2,1);border-radius:4px}
+.ath-card.is-fresh .ath-bar > div{animation:ewPulse 1.6s ease-in-out infinite}
+.ath-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6A6A72;margin-top:10px;letter-spacing:.5px}
+#ath-current{color:var(--fg-dim)}
+
+/* Mobile bottom action row */
+.mobile-actions{display:none}
+
 /* MOBILE */
 @media (max-width:720px){
-  .shell{padding:14px 14px 32px}
+  .shell{padding:14px 14px 140px}
+  body{padding-bottom:env(safe-area-inset-bottom)}
   .hero-grid{grid-template-columns:1fr;gap:24px}
   .hero-number{font-size:clamp(46px,15vw,80px)}
-  .nav-right .btn:not(.primary){display:none}
+  .nav-right .btn{display:none}     /* hide nav buttons — use bottom row */
   .rail{order:2}
+  .ath-num{font-size:30px}
+  .lockup-num{font-size:30px}
+  .footer{padding-bottom:8px}
+  /* Holding rows: prevent text wrapping mid-number */
+  .holding-val{white-space:nowrap;flex-shrink:0}
+  .holding-val .v{white-space:nowrap}
+  .mobile-actions{display:flex;gap:10px;position:fixed;left:10px;right:10px;bottom:max(10px, env(safe-area-inset-bottom));z-index:50;padding:10px;background:rgba(8,8,12,.94);backdrop-filter:blur(14px) saturate(140%);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px -12px rgba(0,0,0,.6)}
+  .mobile-actions .btn{flex:1;padding:12px 14px;font-size:12.5px}
+  .mobile-actions .btn.primary{flex:1.4}
+  .tabs{margin-top:14px}
 }
 </style>
 </head>
@@ -199,7 +242,7 @@ body.math-route #math-page{display:block}
     </div>
   </nav>
 
-  <div class="hero-eyebrow" id="eyebrow">SPCX IPO'D TODAY · HE'S WORTH</div>
+  <div class="hero-eyebrow" id="eyebrow">SPCX IPO'D · HE'S WORTH</div>
 
   <div class="hero-grid">
     <div>
@@ -216,28 +259,41 @@ body.math-route #math-page{display:block}
         <svg class="spark" id="spark" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
         <div class="spark-meta">
           <span>LO <span id="day-lo">—</span></span>
-          <span>SESSION · 1 TICK ≈ 2s</span>
+          <span>SESSION · 1 TICK ≈ 1.6S</span>
           <span>HI <span id="day-hi">—</span></span>
         </div>
       </div>
 
-      <div class="tabs">
-        <span class="active">LIVE</span>
-        <span>1D</span>
-        <span>1W</span>
-        <span>1M</span>
-        <span>ALL</span>
+      <div class="tabs" id="range-tabs">
+        <span class="active" data-range="live">NOW</span>
+        <span data-range="1d">1D</span>
+        <span data-range="5d">1W</span>
+        <span data-range="1mo">1M</span>
+        <span data-range="max">ALL</span>
       </div>
     </div>
 
     <aside class="rail">
       <div class="card">
         <div class="card-h">
-          <span class="label">HIS PORTFOLIO</span>
+          <span class="label">GROSS ASSETS</span>
           <span class="total" id="portfolio-total">$0B</span>
         </div>
         <div class="alloc-bar" id="alloc-bar"></div>
         <div class="holdings-list" id="holdings"></div>
+      </div>
+
+      <div class="card ath-card" id="ath-card">
+        <div class="card-h">
+          <span class="label" id="ath-title">ALL-TIME HIGH</span>
+          <span class="total" id="ath-status">—</span>
+        </div>
+        <div class="ath-num" id="ath-num">$0B</div>
+        <div class="ath-bar"><div id="ath-bar-fill"></div></div>
+        <div class="ath-meta">
+          <span id="ath-current">NOW —</span>
+          <span id="ath-when">—</span>
+        </div>
       </div>
 
       <div class="card">
@@ -257,6 +313,11 @@ body.math-route #math-page{display:block}
   <div class="footer">
     <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="/math" onclick="openMath();return false">SEE THE MATH ↗</a></span>
     <span id="stale-note">QUOTE FRESH</span>
+  </div>
+
+  <div class="mobile-actions" id="mobile-actions" aria-hidden="false">
+    <button class="btn muted" id="sound-btn-m" onclick="toggleSound()" aria-label="Toggle sound">🔇 SOUND</button>
+    <button class="btn primary" onclick="share()" aria-label="Share number">SHARE NUMBER</button>
   </div>
 </div>
 
@@ -396,7 +457,8 @@ body.math-route #math-page{display:block}
 
 <script>
 const API_URL = 'https://elonsworth-quotes.absoluteio.workers.dev';
-const POLL_MS = 2000;
+const POLL_MS = 8000;          // real-fetch cadence (8s — gentle on Worker + Yahoo)
+const JITTER_MS = 1600;        // visual tick cadence — keeps page alive 24/7
 const SPARK_MAX = 240;
 
 let state = {
@@ -405,6 +467,17 @@ let state = {
   soundOn: false,
   lastUpdate: 0,
   tapCount: 0,
+  // Live jitter state — fakes 1.6s 'alive' feel between real fetches.
+  // Real fetched values are authoritative; jitter applies tiny ±0.05% walk
+  // to TSLA + SPCX, snapping back on each real tick.
+  jitter: {
+    tsla: 0,   // current TSLA jitter offset (px)
+    spcx: 0,   // current SPCX jitter offset (px)
+    base: null // last real data snapshot for re-computation
+  },
+  ath: parseFloat(localStorage.getItem('ew_ath') || '0') || 0,
+  athTs: parseInt(localStorage.getItem('ew_ath_ts') || '0') || 0,
+  athBroken: parseInt(localStorage.getItem('ew_ath_broken_ts') || '0') || 0, // last 'fresh ATH' time
 };
 
 function fmtMoney(n){
@@ -412,6 +485,13 @@ function fmtMoney(n){
   if(n>=1e12) return '$'+(n/1e12).toFixed(3).replace(/\.?0+$/,'')+'T';
   if(n>=1e9)  return '$'+(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
   if(n>=1e6)  return '$'+(n/1e6).toFixed(1)+'M';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtBigT(n){
+  // For day-lo/hi: prefer trillions when >=1T for consistency with hero.
+  if(n==null||!isFinite(n)) return '—';
+  if(n>=1e12) return '$'+(n/1e12).toFixed(3).replace(/\.?0+$/,'')+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
   return '$'+Math.round(n).toLocaleString();
 }
 function fmtFull(n){
@@ -468,7 +548,17 @@ function toggleSound(){
 function share(){
   const n = state.history[state.history.length-1]?.v;
   if(!n) return;
-  const txt = `Elon Musk is worth ${fmtMoneyPrecise(n)} right now. Watch it tick: https://elonsworth.com`;
+  // Pick a variant deterministically per session for lightweight A/B (variant logged on next /api/event hit)
+  const variants = [
+    `${fmtMoneyPrecise(n)} and counting → elonsworth.com`,
+    `Elon is worth ${fmtMoneyPrecise(n)} right now → elonsworth.com`,
+    `Watch a trillionaire tick: ${fmtMoneyPrecise(n)} → elonsworth.com`,
+  ];
+  const v = state.shareVariant ?? (state.shareVariant = Math.floor(Math.random() * variants.length));
+  const txt = variants[v];
+  // Fire-and-forget share event (Worker may not have /api/event yet; ignore failures)
+  try{ fetch(API_URL + '/api/event', { method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ event:'share', variant:v, value:n, ts:Date.now(), referrer:document.referrer||'', screen:`${window.innerWidth}x${window.innerHeight}` }) }).catch(()=>{}); }catch(e){}
   if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
     navigator.share({ title:"Elon's Worth", text: txt, url:'https://elonsworth.com' }).catch(()=>{});
     return;
@@ -838,20 +928,51 @@ function setText(id, val){ const e=document.getElementById(id); if(e) e.textCont
 function paintSpark(){
   const svg = document.getElementById('spark');
   const W = 1000, H = 200, pad = 10;
-  if(state.history.length < 2){ svg.innerHTML=''; return; }
-  const vals = state.history.map(p=>p.v);
+  // Pick series: range history (1D/1W/1M/ALL) or live ticks
+  const useRange = state.activeRange && state.activeRange !== 'live' && state.rangeHistory && state.rangeHistory.length > 1;
+  const series = useRange ? state.rangeHistory : state.history;
+  if(series.length < 2){ svg.innerHTML=''; return; }
+  const vals = series.map(p=>p.v);
   const mn = Math.min(...vals), mx = Math.max(...vals);
-  const range = (mx-mn) || 1;
-  const pts = state.history.map((p,i)=>{
-    const x = pad + (i/(state.history.length-1)) * (W-pad*2);
-    const y = pad + (1 - (p.v-mn)/range) * (H-pad*2);
+  const rng = (mx-mn) || 1;
+  const pts = series.map((p,i)=>{
+    const x = pad + (i/(series.length-1)) * (W-pad*2);
+    const y = pad + (1 - (p.v-mn)/rng) * (H-pad*2);
     return [x,y];
   });
   const line = pts.map(([x,y],i)=>(i?`L${x.toFixed(1)},${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
   const area = `${line} L${pts[pts.length-1][0]},${H} L${pts[0][0]},${H} Z`;
   const last = pts[pts.length-1];
-  const up = state.history[state.history.length-1].v >= state.history[0].v;
+  // For LIVE range: compare to today's open (prev close), not just first sample (which can be a random jitter value).
+  // For ranges (1D/1W/...): compare to series start.
+  let up;
+  if(useRange){
+    up = series[series.length-1].v >= series[0].v;
+  } else {
+    const base = state.openingWorth ?? series[0].v;
+    up = series[series.length-1].v >= base;
+  }
   const color = up ? 'var(--green)' : 'var(--red)';
+  // Baseline = today's opening worth (LIVE) or series-start value (ranges).
+  // For the LIVE view we want to show the OPEN line meaningfully, so we expand
+  // the chart's y-domain to include it (otherwise it would be clipped offscreen).
+  const baseVal = useRange ? series[0].v : (state.openingWorth ?? series[0].v);
+  // Recompute mn/mx/rng with the open included so OPEN is always visible
+  const mnE = Math.min(mn, baseVal), mxE = Math.max(mx, baseVal);
+  const rngE = (mxE - mnE) || 1;
+  // Re-project all points with the expanded domain
+  const ptsE = series.map((p,i)=>{
+    const x = pad + (i/(series.length-1)) * (W-pad*2);
+    const y = pad + (1 - (p.v - mnE) / rngE) * (H - pad * 2);
+    return [x,y];
+  });
+  const lineE = ptsE.map(([x,y],i)=>(i?`L${x.toFixed(1)},${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+  const areaE = `${lineE} L${ptsE[ptsE.length-1][0]},${H} L${ptsE[0][0]},${H} Z`;
+  const lastE = ptsE[ptsE.length-1];
+  const baseY = pad + (1 - (baseVal - mnE) / rngE) * (H - pad * 2);
+  // Build baseline visual: dashed line + small label
+  const baseDash = `<line x1="${pad}" y1="${baseY.toFixed(1)}" x2="${W-pad}" y2="${baseY.toFixed(1)}" stroke="#5A5A66" stroke-width="1" stroke-dasharray="4 6" opacity="0.7"/>
+        <text x="${W-pad-4}" y="${(baseY - 6).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9A9AA8" letter-spacing="1">OPEN</text>`;
   svg.innerHTML = `
     <defs>
       <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
@@ -859,9 +980,10 @@ function paintSpark(){
         <stop offset="100%" stop-color="${up?'#00FF85':'#FF5252'}" stop-opacity="0"/>
       </linearGradient>
     </defs>
-    <path d="${area}" fill="url(#sparkFill)"/>
-    <path d="${line}" stroke="${up?'#00FF85':'#FF5252'}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${up?'#00FF85':'#FF5252'}"/>
+    ${baseDash}
+    <path d="${areaE}" fill="url(#sparkFill)"/>
+    <path d="${lineE}" stroke="${up?'#00FF85':'#FF5252'}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastE[0]}" cy="${lastE[1]}" r="4" fill="${up?'#00FF85':'#FF5252'}"/>
   `;
 }
 
@@ -887,8 +1009,10 @@ function paintHoldings(d){
   document.getElementById('alloc-bar').innerHTML =
     items.map(i=>`<div style="width:${(i.val/portfolioTotal*100).toFixed(2)}%;background:${i.color}"></div>`).join('');
 
-  document.getElementById('holdings').innerHTML =
-    items.map(i=>{
+  // Append a "minus liabilities = net worth" row for transparency.
+  const liab = C.LIABILITIES?.margin_loans_est || 0;
+  const netWorth = portfolioTotal - liab;
+  const holdingsHtml = items.map(i=>{
       const pct = (i.val/portfolioTotal*100).toFixed(1)+'%';
       return `<div class="holding">
         <div class="swatch" style="background:${i.color}"></div>
@@ -905,6 +1029,35 @@ function paintHoldings(d){
         </div>
       </div>`;
     }).join('');
+  // Liability row (subtracts from gross) + final net-worth line
+  const liabRow = liab > 0 ? `<div class="holding holding-liab">
+      <div class="swatch" style="background:#FF5252;opacity:.6"></div>
+      <div class="holding-body">
+        <div class="holding-name-row">
+          <span class="holding-name">Margin Loans</span>
+          <span class="holding-badge lock">DEBT</span>
+        </div>
+        <div class="holding-sub">Pledged TSLA, est.</div>
+      </div>
+      <div class="holding-val">
+        <div class="v" style="color:var(--red)">−${fmtMoney(liab)}</div>
+        <div class="p">est.</div>
+      </div>
+    </div>` : '';
+  const netRow = `<div class="holding holding-net">
+      <div class="swatch" style="background:transparent"></div>
+      <div class="holding-body">
+        <div class="holding-name-row">
+          <span class="holding-name" style="color:var(--green)">NET WORTH</span>
+        </div>
+        <div class="holding-sub">= assets − liabilities</div>
+      </div>
+      <div class="holding-val">
+        <div class="v" style="color:var(--green);font-weight:700">${fmtMoney(netWorth)}</div>
+        <div class="p">today</div>
+      </div>
+    </div>`;
+  document.getElementById('holdings').innerHTML = holdingsHtml + liabRow + netRow;
 
   document.getElementById('lockup-val').textContent = fmtMoney(lockedSpcx);
   const end = new Date('2027-06-12T00:00:00Z');
@@ -923,20 +1076,134 @@ function paintChips(d){
   document.getElementById('spcx-px').textContent = '$'+spcx.p.toFixed(2);
   document.getElementById('spcx-pct').textContent = fmtPct(sPct);
   document.getElementById('spcx-pct').className = 'pct ' + (sPct>=0?'up':'down');
-  document.getElementById('day-lo').textContent = fmtMoney(state.history.reduce((a,p)=>Math.min(a,p.v), Infinity));
-  document.getElementById('day-hi').textContent = fmtMoney(state.history.reduce((a,p)=>Math.max(a,p.v), -Infinity));
+  // For LO/HI, derive today's session range from underlying TSLA & SPCX daily hi/lo.
+  // We compute the net-worth equivalents to give a more honest "today" range than
+  // just the tail of jitter samples.
+  const tHi = tsla.hi || tsla.p, tLo = tsla.lo || tsla.p;
+  const sHi = spcx.hi || spcx.p, sLo = spcx.lo || spcx.p;
+  const hiNet = computeWorth(d, tHi, sHi);
+  const loNet = computeWorth(d, tLo, sLo);
+  document.getElementById('day-lo').textContent = fmtBigT(loNet);
+  document.getElementById('day-hi').textContent = fmtBigT(hiNet);
 }
 
-function paintHero(n, prev){
+function paintHero(n, prev, opts){
   const hero = document.getElementById('hero');
   hero.textContent = fmtMoneyPrecise(n);
-  hero.classList.remove('flash-up','flash-down');
-  if(prev!=null){
-    if(n>prev){ hero.classList.add('flash-up'); clickAudio.tick(true); }
-    else if(n<prev){ hero.classList.add('flash-down'); clickAudio.tick(false); }
+  // Flash + chirp only on real fetched ticks. Jitter ticks would otherwise
+  // create a constant red/green flicker since they fire every 1.6s.
+  if(opts && opts.real){
+    hero.classList.remove('flash-up','flash-down');
+    // Force reflow so the animation restarts even if same class
+    void hero.offsetWidth;
+    if(prev != null){
+      if(n > prev){ hero.classList.add('flash-up'); clickAudio.tick(true); }
+      else if(n < prev){ hero.classList.add('flash-down'); clickAudio.tick(false); }
+    }
   }
-  // delta vs previous day open (approx from prev close TSLA + SPCX)
-  // We compute it as: net worth at current quotes vs net worth at prev-close quotes
+}
+
+// Compute net worth from base data + ad-hoc TSLA/SPCX prices (used by jitter loop)
+function computeWorth(base, tsla, spcx){
+  if(!base) return null;
+  const C = base.constants;
+  const vested = C.TSLA.award_2025_tranches_vested || 0;
+  const t = C.TSLA.trust_shares * tsla
+          + C.TSLA.options_2018_shares * Math.max(0, tsla - C.TSLA.options_2018_strike)
+          + C.TSLA.award_2025_shares_per_tranche * vested * Math.max(0, tsla - C.TSLA.award_2025_offset);
+  const s = C.SPCX.musk_shares * spcx;
+  const priv = (C.PRIVATE?.boring_company_est || 0) + (C.PRIVATE?.neuralink_est || 0) + (C.PRIVATE?.cash_residual_est || 0);
+  const liab = C.LIABILITIES?.margin_loans_est || 0;
+  return t + s + priv - liab;
+}
+
+// 1.6s visual jitter — keeps the page feeling alive between real /api/net-worth fetches.
+// Tiny ±0.05% random walk on TSLA + SPCX; snaps back when real tick lands.
+function jitterTick(){
+  const base = state.jitter.base;
+  if(!base || !base.quotes) return;
+  const tBase = base.quotes.TSLA.p;
+  const sBase = base.quotes.SPCX.p;
+  // walk
+  state.jitter.tsla += (Math.random() - 0.5) * tBase * 0.0008;
+  state.jitter.spcx += (Math.random() - 0.5) * sBase * 0.0008;
+  // gently mean-revert so we never drift far from real value
+  state.jitter.tsla *= 0.85;
+  state.jitter.spcx *= 0.85;
+  // clamp to ±0.1% of base
+  state.jitter.tsla = Math.max(-tBase * 0.001, Math.min(tBase * 0.001, state.jitter.tsla));
+  state.jitter.spcx = Math.max(-sBase * 0.001, Math.min(sBase * 0.001, state.jitter.spcx));
+  const tNow = tBase + state.jitter.tsla;
+  const sNow = sBase + state.jitter.spcx;
+  const n = computeWorth(base, tNow, sNow);
+  if(n == null) return;
+  const prev = state.jitterPrev;
+  state.jitterPrev = n;
+  // ATH check on jitter too (in case we hit a new high mid-jitter)
+  maybeBumpAth(n);
+  paintHero(n, prev, { real: false });
+  paintAth(n);
+  // Append a sparkline sample so the chart visibly moves too
+  state.history.push({ t: Date.now(), v: n, full: base, jitter: true });
+  if(state.history.length > SPARK_MAX) state.history.shift();
+  paintSpark();
+}
+
+// Bump ATH if current value > stored ATH. Persist + mark fresh for 24h ONLY when
+// we beat a previously-stored ATH (so first-visit users don't see a false 'NEW ATH').
+function maybeBumpAth(n){
+  const hadPrior = state.ath > 0;
+  if(n > state.ath){
+    const beats = state.ath;
+    state.ath = n;
+    state.athTs = Date.now();
+    if(hadPrior && n > beats * 1.0001){  // require >0.01% improvement to mark fresh
+      state.athBroken = Date.now();
+      localStorage.setItem('ew_ath_broken_ts', String(state.athBroken));
+    }
+    localStorage.setItem('ew_ath', String(state.ath));
+    localStorage.setItem('ew_ath_ts', String(state.athTs));
+  }
+}
+
+function paintAth(currentWorth){
+  const ath = Math.max(state.ath, currentWorth);
+  const pct = ath > 0 ? (currentWorth / ath) : 0;
+  const gap = ath - currentWorth;
+  // Strict mutually-exclusive states (no contradictory copy):
+  //   AT_PEAK   → within $100M of the stored peak (significant figure at trillions scale)
+  //   FRESH     → at peak AND we marked athBroken < 24h ago
+  //   BELOW     → anything else
+  const atPeak = ath > 0 && gap < 100_000_000;
+  const isFresh = !!(state.athBroken && atPeak && (Date.now() - state.athBroken < 24 * 3600 * 1000));
+  const card = document.getElementById('ath-card');
+  if(!card) return;
+  card.classList.toggle('is-fresh', !!isFresh);
+  const titleEl = document.getElementById('ath-title');
+  const statusEl = document.getElementById('ath-status');
+  const whenEl = document.getElementById('ath-when');
+  if(isFresh){
+    titleEl.textContent = 'NEW ALL-TIME HIGH';
+    statusEl.textContent = 'TODAY';
+    whenEl.textContent = 'AT PEAK';
+  } else if(atPeak){
+    titleEl.textContent = 'ALL-TIME HIGH';
+    statusEl.textContent = 'AT PEAK';
+    whenEl.textContent = 'AT PEAK';
+  } else {
+    titleEl.textContent = 'ALL-TIME HIGH';
+    statusEl.textContent = (pct * 100).toFixed(2) + '%';
+    // Format the gap with precision proportional to its size
+    let gapStr;
+    if(gap >= 1e9) gapStr = '$' + (gap/1e9).toFixed(1) + 'B';
+    else if(gap >= 1e6) gapStr = '$' + (gap/1e6).toFixed(0) + 'M';
+    else gapStr = '$' + Math.round(gap).toLocaleString();
+    whenEl.textContent = gapStr + ' BELOW';
+  }
+  document.getElementById('ath-num').textContent = fmtMoney(ath);
+  const fill = document.getElementById('ath-bar-fill');
+  if(fill) fill.style.width = Math.max(4, Math.min(100, pct * 100)).toFixed(2) + '%';
+  document.getElementById('ath-current').textContent = 'NOW ' + fmtMoney(currentWorth);
 }
 
 function paintDelta(d){
@@ -969,10 +1236,27 @@ async function tick(){
     if(state.history.length > SPARK_MAX) state.history.shift();
     state.lastUpdate = Date.now();
 
-    paintHero(n, prev);
+    // Update jitter base — next jitter ticks walk around this real value.
+    state.jitter.base = d;
+    state.jitter.tsla = 0;
+    state.jitter.spcx = 0;
+    state.jitterPrev = n;
+
+    // Capture today's opening net worth (computed from prev-close quotes) so the
+    // sparkline coloring stays consistent across jitter samples.
+    if(state.openingWorth == null){
+      const C = d.constants;
+      const T = d.quotes.TSLA.prev, S = d.quotes.SPCX.prev;
+      state.openingWorth = computeWorth(d, T, S);
+    }
+
+    maybeBumpAth(n);
+
+    paintHero(n, prev, { real: true });
     paintDelta(d);
     paintChips(d);
     paintHoldings(d);
+    paintAth(n);
     paintSpark();
 
     // live status: honor server-reported data_quality first, fall back to age
@@ -981,23 +1265,44 @@ async function tick(){
     const dot = document.getElementById('live-dot');
     const txt = document.getElementById('live-text');
     const note = document.getElementById('stale-note');
-    if(dq.any_cached){
-      dot.classList.remove('stale'); dot.classList.add('dead');
-      txt.textContent = 'CACHED';
-      const which = Object.entries(dq.sources||{}).filter(([_,v])=>v==='cache').map(([k])=>k).join('+');
-      note.textContent = which
-        ? `${which} feed down · showing last-good (${Math.round((dq.max_stale_sec||ageS)/60)}min old)`
-        : `Feed down · showing last-good (${Math.round(ageS/60)}min old)`;
-    } else if(ageS < 90){
-      dot.classList.remove('stale','dead'); txt.textContent = 'LIVE';
-      const src = dq.sources?.TSLA && dq.sources?.SPCX && dq.sources.TSLA===dq.sources.SPCX ? dq.sources.TSLA.toUpperCase() : '';
-      note.textContent = src ? `LIVE · ${src}` : 'QUOTE FRESH';
-    } else if(ageS < 60*30){
-      dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent = 'DELAYED';
-      note.textContent = `Last quote ${Math.round(ageS/60)}min old`;
+    // Detect market state instead of treating all stale data as "CACHED".
+    // Markets: NYSE/Nasdaq are 9:30–16:00 ET, Mon–Fri (not perfect re: holidays).
+    const nyc = new Date(Date.now());
+    const nycHour = (parseInt(nyc.toLocaleString('en-US', { hour:'2-digit', hour12:false, timeZone:'America/New_York' }))||0);
+    const nycMin  = (parseInt(nyc.toLocaleString('en-US', { minute:'2-digit', timeZone:'America/New_York' }))||0);
+    const nycWeekday = (new Date(nyc.toLocaleString('en-US', { timeZone:'America/New_York' }))).getDay();
+    const isMarketDay = nycWeekday >= 1 && nycWeekday <= 5;
+    const minOfDay = nycHour * 60 + nycMin;
+    const isMarketHours = isMarketDay && minOfDay >= 570 && minOfDay < 960;
+    const ageMin = Math.max(0, Math.round(ageS/60));
+
+    if(isMarketHours){
+      if(dq.any_cached){
+        dot.classList.remove('stale'); dot.classList.add('dead');
+        txt.textContent = 'CACHED';
+        note.textContent = `Feed delayed · last good ${ageMin}min ago`;
+      } else if(ageS < 90){
+        dot.classList.remove('stale','dead'); txt.textContent = 'LIVE';
+        const src = dq.sources?.TSLA && dq.sources?.SPCX && dq.sources.TSLA===dq.sources.SPCX ? dq.sources.TSLA.toUpperCase() : '';
+        note.textContent = src ? `LIVE · ${src}` : 'QUOTE FRESH';
+      } else {
+        dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent = 'DELAYED';
+        note.textContent = `Last quote ${ageMin}min old`;
+      }
     } else {
-      dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent = 'CACHED';
-      note.textContent = `Last quote ${Math.round(ageS/60)}min old · feed cached`;
+      // Off-hours (weekend or before/after bell): show "CLOSED" instead of "CACHED" —
+      // it's not a feed problem, the market is just closed.
+      dot.classList.remove('dead'); dot.classList.add('stale');
+      if(!isMarketDay){
+        txt.textContent = 'WEEKEND';
+        note.textContent = `Markets closed · reopens Monday 9:30 ET`;
+      } else if(minOfDay < 570){
+        txt.textContent = 'PRE-MARKET';
+        note.textContent = `Opens ${('0'+Math.floor((570-minOfDay)/60)).slice(-2)}h${('0'+((570-minOfDay)%60)).slice(-2)} · 9:30 ET`;
+      } else {
+        txt.textContent = 'AFTER-HOURS';
+        note.textContent = `Market closed · last close ${ageMin}min ago`;
+      }
     }
 
     if(document.body.classList.contains('math-route')) populateMath();
@@ -1015,11 +1320,69 @@ function clockTick(){
   document.getElementById('clock-display').textContent = fmt;
 }
 
+// Range tab wiring — swap chart series on click
+(function bindRangeTabs(){
+  const tabs = document.getElementById('range-tabs');
+  if(!tabs) return;
+  tabs.addEventListener('click', async e => {
+    const t = e.target.closest('span[data-range]');
+    if(!t) return;
+    tabs.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+    t.classList.add('active');
+    const range = t.dataset.range;
+    if(range === 'live'){
+      state.activeRange = 'live';
+      paintSpark();
+      return;
+    }
+    state.activeRange = range;
+    try{
+      const r = await fetch(`${API_URL}/api/history?range=${range}`, { cache:'force-cache' });
+      const j = await r.json();
+      if(!j.series || !j.series.length) return;
+      state.rangeHistory = j.series.map(p => ({ t: p.t, v: p.v }));
+      paintSpark();
+    }catch(err){ console.warn('range fetch fail', err); }
+  });
+})();
+
+// Real fetch loop
 setInterval(tick, POLL_MS);
+// Visual jitter loop — always alive
+setInterval(jitterTick, JITTER_MS);
 setInterval(clockTick, 1000);
+// Dynamic eyebrow copy based on days since SPCX IPO
+(function setEyebrow(){
+  const el = document.getElementById('eyebrow');
+  if(!el) return;
+  const ipo = new Date('2026-06-12T00:00:00-04:00');
+  const now = new Date();
+  const days = Math.floor((now - ipo) / 86400000);
+  let copy;
+  if(days < 0) copy = `SPCX IPOS IN ${Math.abs(days)} DAY${Math.abs(days)===1?'':'S'} · ALREADY WORTH`;
+  else if(days === 0) copy = `SPCX IPO'D TODAY · HE'S WORTH`;
+  else if(days === 1) copy = `SPCX IPO'D YESTERDAY · HE'S WORTH`;
+  else if(days < 30) copy = `SPCX +${days}D IN · HE'S WORTH`;
+  else if(days < 365) copy = `WORLD'S FIRST TRILLIONAIRE · HE'S WORTH`;
+  else copy = `${Math.floor(days/365)} YEAR${Math.floor(days/365)===1?'':'S'} OF SPCX · HE'S WORTH`;
+  el.textContent = copy;
+})();
+
 clockTick();
 tick();
 routeFromPath();
+
+// Sound button on mobile mirrors desktop one
+(function syncSoundBtns(){
+  const main = document.getElementById('sound-btn');
+  const mobile = document.getElementById('sound-btn-m');
+  if(!main||!mobile) return;
+  const obs = new MutationObserver(() => {
+    mobile.textContent = main.textContent;
+    mobile.style.color = main.style.color;
+  });
+  obs.observe(main, { characterData:true, childList:true, subtree:true, attributes:true });
+})();
 
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('math-route')) closeMath(); });
 </script>

@@ -265,6 +265,52 @@ export default {
       }, null, 2), { headers: corsHeaders() });
     }
 
+    // Share/page-view event sink (best-effort; KV daily rollup).
+    if (url.pathname === "/api/event" && req.method === "POST") {
+      try {
+        const body = await req.json() as any;
+        const event = String(body.event || "unknown").slice(0, 32);
+        const variant = (typeof body.variant === "number") ? body.variant : null;
+        const ref = String(body.referrer || "").slice(0, 256);
+        const screen = String(body.screen || "").slice(0, 32);
+        const ua = (req.headers.get("user-agent") || "").slice(0, 200);
+        const country = req.headers.get("cf-ipcountry") || "";
+        const day = new Date().toISOString().slice(0, 10);
+        const key = `ev:${day}:${event}:${variant ?? "_"}`;
+        const kv = (env as any).QUOTES_KV;
+        if (kv) {
+          const cur = JSON.parse((await kv.get(key)) || "{}");
+          cur.count = (cur.count || 0) + 1;
+          cur.last_ts = Date.now();
+          cur.last_country = country;
+          cur.last_screen = screen;
+          cur.last_ref = ref;
+          await kv.put(key, JSON.stringify(cur), { expirationTtl: 60 * 60 * 24 * 90 });
+        }
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders() });
+      } catch (e: any) {
+        // Never fail loudly — sharing must still work.
+        return new Response(JSON.stringify({ ok: false, err: e?.message }), { headers: corsHeaders() });
+      }
+    }
+
+    if (url.pathname === "/api/events/summary") {
+      // GET /api/events/summary?days=7
+      const days = Math.max(1, Math.min(90, parseInt(url.searchParams.get("days") || "7", 10)));
+      const kv = (env as any).QUOTES_KV;
+      if (!kv) return new Response(JSON.stringify({ error: "no_kv" }), { status: 500, headers: corsHeaders() });
+      const out: Record<string, any> = {};
+      for (let i = 0; i < days; i++) {
+        const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        const list = await kv.list({ prefix: `ev:${d}:` });
+        for (const k of list.keys) {
+          const v = JSON.parse((await kv.get(k.name)) || "{}");
+          out[k.name] = v;
+        }
+      }
+      return new Response(JSON.stringify(out, null, 2), { headers: corsHeaders() });
+    }
+
     try {
       if (url.pathname === "/api/quote") {
         const quotes = await loadAllQuotes(env);
@@ -279,11 +325,72 @@ export default {
         return new Response(JSON.stringify(result),
           { headers: corsHeaders({ "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}` }) });
       }
+      if (url.pathname === "/api/history") {
+        // GET /api/history?range=1d|5d|1mo|3mo|max
+        // Returns daily TSLA + SPCX closes and a derived net-worth time series.
+        const range = (url.searchParams.get("range") || "1mo").toLowerCase();
+        const allowed: Record<string, { range: string; interval: string }> = {
+          "1d":  { range: "1d",  interval: "5m" },
+          "5d":  { range: "5d",  interval: "30m" },
+          "1mo": { range: "1mo", interval: "1d" },
+          "3mo": { range: "3mo", interval: "1d" },
+          "6mo": { range: "6mo", interval: "1d" },
+          "1y":  { range: "1y",  interval: "1d" },
+          "max": { range: "max", interval: "1wk" },
+        };
+        const sel = allowed[range] || allowed["1mo"];
+        const hist = await loadHistory(SYMBOLS, sel.range, sel.interval);
+        // Compute net-worth series from each timestamp's TSLA + SPCX close.
+        // SPCX is newly listed (IPO 2026-06-12) so before that there is no SPCX data.
+        // For earlier dates, hold SPCX flat at its earliest known close, OR fall back to the IPO price ($135).
+        const tArr = hist.TSLA || [];
+        const sArr = hist.SPCX || [];
+        const sFirstClose = sArr.length ? sArr[0].c : 135; // SPCX IPO price
+        const sByTs = new Map(sArr.map(p => [p.t, p.c]));
+        const series: { t: number; v: number; tsla: number; spcx: number }[] = [];
+        for (const tp of tArr) {
+          if (tp == null) continue;
+          // SPCX value for this timestamp: exact match if available, else earliest known close, else IPO price.
+          const sClose = sByTs.get(tp.t) ?? (tp.t >= (sArr[0]?.t ?? Infinity) ? sArr[sArr.length - 1].c : sFirstClose);
+          const vested = CONSTANTS.TSLA.award_2025_tranches_vested;
+          const t = CONSTANTS.TSLA.trust_shares * tp.c
+            + CONSTANTS.TSLA.options_2018_shares * Math.max(0, tp.c - CONSTANTS.TSLA.options_2018_strike)
+            + CONSTANTS.TSLA.award_2025_shares_per_tranche * vested * Math.max(0, tp.c - CONSTANTS.TSLA.award_2025_offset);
+          const s = CONSTANTS.SPCX.musk_shares * sClose;
+          const priv = CONSTANTS.PRIVATE.boring_company_est + CONSTANTS.PRIVATE.neuralink_est + CONSTANTS.PRIVATE.cash_residual_est;
+          const liab = CONSTANTS.LIABILITIES.margin_loans_est;
+          series.push({ t: tp.t, v: t + s + priv - liab, tsla: tp.c, spcx: sClose });
+        }
+        return new Response(JSON.stringify({ range, series }),
+          { headers: corsHeaders({ "Cache-Control": "public, max-age=300, s-maxage=300" }) });
+      }
     } catch (e: any) {
       return new Response(JSON.stringify({ error: e.message }), { status: 502, headers: corsHeaders() });
     }
 
-    return new Response(JSON.stringify({ error: "not_found", routes: ["/api/quote", "/api/net-worth", "/api/formula", "/healthz"] }),
+    return new Response(JSON.stringify({ error: "not_found", routes: ["/api/quote", "/api/net-worth", "/api/formula", "/api/history", "/api/event", "/api/events/summary", "/healthz"] }),
       { status: 404, headers: corsHeaders() });
   },
 };
+
+// Fetch historical OHLC bars from Yahoo Finance chart API.
+// Returns { TSLA: [{t, c}], SPCX: [{t, c}] } using closes.
+async function loadHistory(symbols: readonly string[], range: string, interval: string): Promise<Record<string, { t: number; c: number }[]>> {
+  const out: Record<string, { t: number; c: number }[]> = {};
+  await Promise.all(symbols.map(async sym => {
+    const u = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=${encodeURIComponent(range)}&interval=${encodeURIComponent(interval)}&includePrePost=false`;
+    try {
+      const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0" }, cf: { cacheTtl: 300, cacheEverything: true } as any });
+      if (!r.ok) { out[sym] = []; return; }
+      const j: any = await r.json();
+      const res = j?.chart?.result?.[0];
+      const ts: number[] = res?.timestamp || [];
+      const closes: (number | null)[] = res?.indicators?.quote?.[0]?.close || [];
+      const points = ts.map((t, i) => ({ t: t * 1000, c: closes[i] })).filter(p => typeof p.c === "number") as { t: number; c: number }[];
+      out[sym] = points;
+    } catch {
+      out[sym] = [];
+    }
+  }));
+  return out;
+}
