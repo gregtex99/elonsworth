@@ -107,6 +107,44 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .footer{margin-top:42px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--fg-mute);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .footer a{color:var(--fg-dim);text-decoration:none}
 
+/* /trillion easter-egg game page */
+#trillion-page{display:none;min-height:100vh}
+#trillion-page.open{display:block}
+body.trillion-route #app-shell{display:none}
+body.trillion-route #math-page{display:none}
+body.trillion-route #trillion-page{display:block}
+.tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg)}
+.tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
+.tr-top a{color:var(--fg-dim);text-decoration:none}
+.tr-h1{font-family:'Archivo Black',sans-serif;font-size:38px;letter-spacing:-.5px;margin:20px 0 8px}
+.tr-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-dim);line-height:1.6}
+.tr-stats{display:flex;gap:8px;margin-top:18px}
+.tr-stat{flex:1;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:10px;padding:9px 0;text-align:center}
+.tr-stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:#6A6A72}
+.tr-stat .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:3px}
+.tr-stat .v.cur{color:var(--green)}
+.tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:pointer;outline:none;user-select:none;aspect-ratio:1}
+.tr-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;transition:background .12s, transform .12s}
+.tr-cell .lbl{line-height:1}
+@keyframes trSpawn {0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes trMerge {0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.tr-cell.spawn{animation:trSpawn .18s ease-out}
+.tr-cell.merge{animation:trMerge .18s ease-out}
+.tr-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);border-radius:14px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px;box-sizing:border-box}
+.tr-overlay.show{display:flex}
+.tr-overlay .big{font-family:'Archivo Black',sans-serif;font-size:48px;color:var(--green)}
+.tr-overlay .him{font-family:'Archivo Black',sans-serif;font-size:18px}
+.tr-overlay .vs{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--fg-dim)}
+.tr-overlay .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.tr-overlay .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:11px 16px;border-radius:10px;cursor:pointer;border:0}
+.tr-overlay .btn.pri{background:var(--green);color:var(--green-d);font-weight:700}
+.tr-overlay .btn.sec{background:transparent;color:var(--fg);border:1px solid #2A2A30}
+.tr-overlay .btn.retry{background:#fff;color:#000;font-weight:700}
+.tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
+.tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
+.tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
+
 /* /math FULL PAGE (no modal). Shown when route='math'. */
 #math-page{display:none;padding:0;min-height:100vh}
 #math-page.open{display:block}
@@ -219,6 +257,43 @@ body.math-route #math-page{display:block}
   <div class="footer">
     <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="/math" onclick="openMath();return false">SEE THE MATH ↗</a></span>
     <span id="stale-note">QUOTE FRESH</span>
+  </div>
+</div>
+
+<div id="trillion-page">
+  <div class="tr-wrap">
+    <div class="tr-top">
+      <a href="/" onclick="closeTrillion();return false">← ELONSWORTH.COM</a>
+      <span>EASTER EGG</span>
+    </div>
+    <div class="tr-h1">MAKE A TRILLION</div>
+    <div class="tr-sub">MERGE HIS MONEY. $1B + $1B UNTIL YOU HIT $1T.</div>
+    <div class="tr-stats">
+      <div class="tr-stat"><div class="lbl">MERGED</div><div class="v cur" id="tr-score">$0</div></div>
+      <div class="tr-stat"><div class="lbl">BEST</div><div class="v" id="tr-best">$0</div></div>
+      <div class="tr-stat"><div class="lbl">PACE</div><div class="v" id="tr-time">0:00</div></div>
+    </div>
+    <div class="tr-board" id="tr-board" tabindex="0">
+      <div class="tr-overlay" id="tr-win">
+        <div class="big">$1T</div>
+        <div class="him">YOU'RE HIM NOW.</div>
+        <div class="vs">YOU: <span id="tr-win-time">0:00</span> · HIM: 54 YEARS</div>
+        <div class="row">
+          <button class="btn pri" onclick="shareTrillion()" id="tr-share-btn">SHARE YOUR RUN</button>
+          <button class="btn sec" onclick="keepMerging()">KEEP MERGING</button>
+        </div>
+      </div>
+      <div class="tr-overlay" id="tr-over">
+        <div class="him" style="color:var(--red);font-size:26px">NO MORE MOVES</div>
+        <div class="vs">EVEN HE HAS RED DAYS. MERGED: <span id="tr-over-score">$0</span></div>
+        <button class="btn retry" onclick="resetTrillion()" style="margin-top:10px">TRY AGAIN</button>
+      </div>
+    </div>
+    <div class="tr-help">SWIPE · OR CLICK BOARD + ARROW KEYS / WASD</div>
+    <div class="tr-foot">
+      <button class="new" onclick="resetTrillion()">NEW GAME</button>
+      <div class="taunt">HE TOOK 54 YEARS.<br>NO PRESSURE.</div>
+    </div>
   </div>
 </div>
 
@@ -409,7 +484,7 @@ function onHeroTap(){
   } else if(state.tapCount === 2){
     showToast('keep tapping…');
   } else if(state.tapCount === 5){
-    showToast('🥚 coming soon: make your own trillion');
+    openTrillion();
   }
   clearTimeout(state._tapReset);
   state._tapReset = setTimeout(()=>state.tapCount=0, 1800);
@@ -427,17 +502,297 @@ function closeMath(){
   document.body.classList.remove('math-route');
   document.title = "Elon's Worth — Live Net Worth Tracker";
 }
+function openTrillion(){
+  history.pushState({route:'trillion'},'','/trillion');
+  document.body.classList.remove('math-route');
+  document.body.classList.add('trillion-route');
+  document.title = '/trillion — Make a Trillion';
+  window.scrollTo(0,0);
+  if(!Trillion.started) Trillion.start();
+}
+function closeTrillion(){
+  history.pushState({route:'home'},'','/');
+  document.body.classList.remove('trillion-route');
+  document.title = "Elon's Worth — Live Net Worth Tracker";
+}
 function routeFromPath(){
-  if(location.pathname === '/math' || location.hash === '#math'){
+  const p = location.pathname;
+  if(p === '/math' || location.hash === '#math'){
     document.body.classList.add('math-route');
+    document.body.classList.remove('trillion-route');
     document.title = '/math — Elon\'s Worth';
     populateMath();
-  } else {
+  } else if(p === '/trillion' || location.hash === '#trillion'){
+    document.body.classList.add('trillion-route');
     document.body.classList.remove('math-route');
+    document.title = '/trillion — Make a Trillion';
+    if(!Trillion.started) Trillion.start();
+  } else {
+    document.body.classList.remove('math-route','trillion-route');
     document.title = "Elon's Worth — Live Net Worth Tracker";
   }
 }
 window.addEventListener('popstate', routeFromPath);
+
+/* ========== /trillion: 2048-clone, $1B → $1T ========== */
+const Trillion = (() => {
+  // Tile values are powers of 2 expressed in billions of $.
+  // Level: 0 (empty) | 1 ($1B) | 2 ($2B) | ... | 10 ($1T)
+  const WIN_LEVEL = 10; // 2^10 * 1B = 1024B = ~$1T
+  const COLORS = {
+    1:  ['#0F1F16', '#5BE89B'],   // 1B
+    2:  ['#0F261C', '#5BE89B'],   // 2B
+    3:  ['#103224', '#5BE89B'],   // 4B
+    4:  ['#104230', '#5BE89B'],   // 8B
+    5:  ['#0E5340', '#FFFFFF'],   // 16B
+    6:  ['#0E6850', '#FFFFFF'],   // 32B
+    7:  ['#0D8068', '#FFFFFF'],   // 64B
+    8:  ['#0AA582', '#FFFFFF'],   // 128B
+    9:  ['#06C49A', '#001A10'],   // 256B
+    10: ['#00FF85', '#00130A'],   // 1T 🔥
+  };
+  const labelFor = lvl => {
+    if(lvl === 0) return '';
+    if(lvl === WIN_LEVEL) return '$1T';
+    const billions = Math.pow(2, lvl - 1); // lvl=1 → 1B
+    if(billions >= 1000) return '$'+(billions/1000).toFixed(billions%1000?1:0).replace(/\.0$/,'')+'T';
+    return '$'+billions+'B';
+  };
+  const fsFor = lvl => {
+    const s = labelFor(lvl);
+    if(s.length <= 3) return 22;
+    if(s.length <= 4) return 19;
+    if(s.length <= 5) return 16;
+    return 13;
+  };
+
+  const S = {
+    grid: Array(4).fill().map(()=>Array(4).fill(0)),
+    score: 0,           // total merged value, in $B
+    best: 0,            // in $B
+    startMs: 0,
+    elapsedMs: 0,
+    won: false,
+    keepGoing: false,
+    started: false,
+    timer: null,
+    boundKey: false,
+  };
+
+  function fmt$(b){
+    if(b >= 1000) return '$'+(b/1000).toFixed(b%1000?2:0)+'T';
+    return '$'+b.toFixed(0)+'B';
+  }
+  function fmtTime(ms){
+    const s = Math.floor(ms/1000);
+    const m = Math.floor(s/60), r = s%60;
+    return m+':'+String(r).padStart(2,'0');
+  }
+
+  function emptyCells(){
+    const cells = [];
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(S.grid[r][c]===0) cells.push([r,c]);
+    return cells;
+  }
+  function spawn(){
+    const empties = emptyCells();
+    if(!empties.length) return null;
+    const [r,c] = empties[Math.floor(Math.random()*empties.length)];
+    // 90% chance $1B, 10% chance $2B
+    S.grid[r][c] = Math.random() < 0.9 ? 1 : 2;
+    return [r,c];
+  }
+
+  function clone(g){ return g.map(row => row.slice()); }
+
+  function slideRowLeft(row){
+    const out = row.filter(v => v !== 0);
+    const merged = new Array(out.length).fill(false);
+    let scoreGain = 0;
+    for(let i=0;i<out.length-1;i++){
+      if(out[i] === out[i+1] && !merged[i] && !merged[i+1]){
+        out[i] = out[i] + 1; // level up
+        out.splice(i+1, 1);
+        merged[i] = true;
+        scoreGain += Math.pow(2, out[i]-1); // value in $B
+      }
+    }
+    while(out.length < 4) out.push(0);
+    return { row: out, scoreGain, merged };
+  }
+
+  function rotateCW(g){
+    const r = Array(4).fill().map(()=>Array(4).fill(0));
+    for(let i=0;i<4;i++) for(let j=0;j<4;j++) r[j][3-i] = g[i][j];
+    return r;
+  }
+
+  function move(dir){
+    // 0=left, 1=up, 2=right, 3=down. Reduce to left via rotations.
+    let g = clone(S.grid);
+    const rot = (4 - dir) % 4;
+    for(let i=0;i<rot;i++) g = rotateCW(g);
+    let moved = false;
+    let scoreGain = 0;
+    let mergedReached = false;
+    for(let r=0;r<4;r++){
+      const before = g[r].slice();
+      const { row, scoreGain: sg, merged } = slideRowLeft(g[r]);
+      g[r] = row;
+      scoreGain += sg;
+      if(merged.some(m=>m)) mergedReached = true;
+      if(before.some((v,i)=>v!==row[i])) moved = true;
+    }
+    // rotate back
+    const back = (4 - rot) % 4;
+    for(let i=0;i<back;i++) g = rotateCW(g);
+    if(!moved) return false;
+    S.grid = g;
+    S.score += scoreGain;
+    if(S.score > S.best){ S.best = S.score; localStorage.setItem('ew_trillion_best', String(S.best)); }
+    spawn();
+    render();
+    // Win check
+    if(!S.won && !S.keepGoing){
+      for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(S.grid[r][c] >= WIN_LEVEL){
+        S.won = true;
+        stopTimer();
+        showWin();
+        break;
+      }
+    }
+    // Game over check
+    if(!hasMoves()){
+      stopTimer();
+      showOver();
+    }
+    return true;
+  }
+
+  function hasMoves(){
+    if(emptyCells().length) return true;
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const v = S.grid[r][c];
+      if(r<3 && S.grid[r+1][c] === v) return true;
+      if(c<3 && S.grid[r][c+1] === v) return true;
+    }
+    return false;
+  }
+
+  function render(){
+    const board = document.getElementById('tr-board');
+    if(!board) return;
+    // Build the 16 cells inline. Keep overlay nodes intact (they live as siblings).
+    let html = '';
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const lvl = S.grid[r][c];
+      const [bg, fg] = lvl ? COLORS[Math.min(lvl, WIN_LEVEL)] : ['#0A0A0E', '#FFFFFF'];
+      html += `<div class="tr-cell" style="background:${bg};color:${fg};font-size:${fsFor(lvl)}px"><span class="lbl">${labelFor(lvl)}</span></div>`;
+    }
+    // Re-attach overlays after cells
+    const winOv = document.getElementById('tr-win');
+    const overOv = document.getElementById('tr-over');
+    board.innerHTML = html;
+    board.appendChild(winOv);
+    board.appendChild(overOv);
+    document.getElementById('tr-score').textContent = fmt$(S.score);
+    document.getElementById('tr-best').textContent = fmt$(S.best);
+  }
+
+  function tickTimer(){
+    S.elapsedMs = Date.now() - S.startMs;
+    document.getElementById('tr-time').textContent = fmtTime(S.elapsedMs);
+  }
+  function startTimer(){ stopTimer(); S.startMs = Date.now() - S.elapsedMs; S.timer = setInterval(tickTimer, 250); }
+  function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer = null; } }
+
+  function showWin(){
+    document.getElementById('tr-win-time').textContent = fmtTime(S.elapsedMs);
+    document.getElementById('tr-win').classList.add('show');
+  }
+  function hideWin(){ document.getElementById('tr-win').classList.remove('show'); }
+  function showOver(){
+    document.getElementById('tr-over-score').textContent = fmt$(S.score);
+    document.getElementById('tr-over').classList.add('show');
+  }
+  function hideOver(){ document.getElementById('tr-over').classList.remove('show'); }
+
+  function reset(){
+    stopTimer();
+    S.grid = Array(4).fill().map(()=>Array(4).fill(0));
+    S.score = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false;
+    hideWin(); hideOver();
+    spawn(); spawn();
+    render();
+    document.getElementById('tr-time').textContent = '0:00';
+    startTimer();
+  }
+
+  function bindInput(){
+    if(S.boundKey) return;
+    const board = document.getElementById('tr-board');
+    if(!board) return;
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if(!document.body.classList.contains('trillion-route')) return;
+      const k = e.key.toLowerCase();
+      let dir = -1;
+      if(k === 'arrowleft' || k === 'a') dir = 0;
+      else if(k === 'arrowup' || k === 'w') dir = 1;
+      else if(k === 'arrowright' || k === 'd') dir = 2;
+      else if(k === 'arrowdown' || k === 's') dir = 3;
+      else if(k === 'escape'){ closeTrillion(); return; }
+      if(dir === -1) return;
+      e.preventDefault();
+      move(dir);
+    });
+    // Touch swipe
+    let sx=0, sy=0, t0=0;
+    board.addEventListener('touchstart', e => {
+      const t = e.touches[0]; sx=t.clientX; sy=t.clientY; t0=Date.now();
+    }, {passive:true});
+    board.addEventListener('touchend', e => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      const ax = Math.abs(dx), ay = Math.abs(dy);
+      const dt = Date.now() - t0;
+      if(Math.max(ax,ay) < 24 || dt > 600) return;
+      if(ax > ay) move(dx > 0 ? 2 : 0);
+      else move(dy > 0 ? 3 : 1);
+    }, {passive:true});
+    // Click focuses board so keyboard works
+    board.addEventListener('click', () => board.focus());
+    S.boundKey = true;
+  }
+
+  function start(){
+    S.best = parseFloat(localStorage.getItem('ew_trillion_best') || '0') || 0;
+    bindInput();
+    reset();
+    S.started = true;
+  }
+
+  return {
+    start,
+    reset,
+    keep(){ S.keepGoing = true; hideWin(); startTimer(); },
+    share(){
+      const txt = `I made $1T in ${fmtTime(S.elapsedMs)}.\nElon took 54 years.\nelonsworth.com/trillion`;
+      if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
+        navigator.share({ title:"I made a trillion", text: txt, url:'https://elonsworth.com/trillion' }).catch(()=>{});
+        return;
+      }
+      navigator.clipboard.writeText(txt).then(()=>{
+        document.getElementById('tr-share-btn').textContent = 'COPIED — PASTE IT';
+        setTimeout(()=>{ const b=document.getElementById('tr-share-btn'); if(b) b.textContent='SHARE YOUR RUN'; }, 2000);
+      });
+    },
+    get started(){ return S.started; },
+  };
+})();
+function resetTrillion(){ Trillion.reset(); }
+function keepMerging(){ Trillion.keep(); }
+function shareTrillion(){ Trillion.share(); }
 
 function populateMath(){
   const last = state.history[state.history.length-1];
