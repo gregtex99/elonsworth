@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050507">
+<title>Elon's Worth — Live Net Worth Tracker</title>
+
+<meta name="description" content="Live, transparent Elon Musk net-worth tracker. Real-time math. Show your work. Estimate, not endorsement.">
+<meta property="og:title" content="Elon's Worth — Live Net Worth Tracker">
+<meta property="og:description" content="Live SPCX + TSLA math. Transparent formula. The world's first trillionaire, ticking in real time.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://elonsworth.com">
+<meta property="og:image" content="https://elonsworth.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg-0:#050507; --bg-1:#0A1A10; --bg-2:#0C0C10; --line:#1E1E24; --line-2:#232328;
+  --fg:#FFFFFF; --fg-dim:#7A7A82; --fg-faint:#5A5A62; --fg-mute:#4A4A52;
+  --green:#00FF85; --green-d:#00130A; --red:#FF5252;
+  --pill-bg:#101014;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg-0);color:var(--fg);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1) 0%, var(--bg-0) 55%);overflow-x:hidden}
+
+@keyframes ewBlink {0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes ewFlashUp {0%{color:var(--green);text-shadow:0 0 32px rgba(0,255,133,.55)}100%{color:var(--fg);text-shadow:0 0 0 rgba(0,255,133,0)}}
+@keyframes ewFlashDown {0%{color:var(--red);text-shadow:0 0 32px rgba(255,82,82,.55)}100%{color:var(--fg);text-shadow:0 0 0 rgba(255,82,82,0)}}
+@keyframes ewPulse {0%,100%{opacity:1}50%{opacity:.45}}
+.flash-up{animation:ewFlashUp 1.5s ease-out}
+.flash-down{animation:ewFlashDown 1.5s ease-out}
+
+.shell{max-width:1320px;margin:0 auto;padding:20px 22px 42px;display:flex;flex-direction:column}
+.nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:6px}
+.brand{font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:.5px}
+.live{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green)}
+.live::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);animation:ewBlink 1.6s infinite}
+.live.stale{color:#FFB300}
+.live.stale::before{background:#FFB300}
+.live.dead{color:var(--red)}
+.live.dead::before{background:var(--red)}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:10px 16px;border-radius:10px;border:1px solid var(--line-2);color:var(--fg);cursor:pointer;user-select:none;background:transparent;transition:transform .1s, opacity .1s}
+.btn:hover{opacity:.8}
+.btn:active{transform:scale(.96)}
+.btn.primary{font-size:13px;font-weight:700;letter-spacing:0;padding:10px 20px;border:0;background:var(--green);color:var(--green-d)}
+.btn.muted{color:var(--fg-dim);border-color:var(--line)}
+.link-pill{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--fg-dim);text-decoration:none;border-bottom:1px dashed transparent;padding-bottom:1px}
+.link-pill:hover{color:var(--fg);border-color:var(--fg-dim)}
+
+.hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--green);border:1px solid rgba(0,255,133,.35);border-radius:999px;padding:6px 14px;display:inline-block;margin-top:24px}
+
+.hero-grid{display:grid;grid-template-columns:1fr 360px;gap:44px;margin-top:24px}
+.hero-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim)}
+.hero-number{font-family:'Archivo Black',sans-serif;font-size:clamp(48px,10vw,96px);line-height:1;letter-spacing:-2px;margin-top:14px;white-space:nowrap;cursor:pointer;user-select:none}
+.hero-delta-row{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.delta{font-size:19px;font-weight:700}
+.delta.up{color:var(--green)}
+.delta.down{color:var(--red)}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 12px;border-radius:999px;background:var(--pill-bg);border:1px solid var(--line-2)}
+.chip .pct.up{color:var(--green)}
+.chip .pct.down{color:var(--red)}
+
+/* spark */
+.spark-wrap{margin-top:32px}
+.spark{width:100%;height:140px;display:block}
+.spark-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-faint);margin-top:8px}
+
+/* tabs */
+.tabs{display:flex;gap:26px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;margin-top:18px;padding-bottom:6px}
+.tabs span{color:var(--fg-faint);cursor:pointer;padding-bottom:5px}
+.tabs span.active{color:var(--green);border-bottom:2px solid var(--green)}
+
+/* rail */
+.rail{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:22px}
+.card-h{display:flex;justify-content:space-between;align-items:center}
+.card-h .label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim)}
+.card-h .total{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green)}
+.alloc-bar{display:flex;height:10px;border-radius:3px;overflow:hidden;margin-top:14px;gap:2px}
+.alloc-bar div{height:100%}
+.holdings-list{display:flex;flex-direction:column;margin-top:6px}
+.holding{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #1A1A20}
+.holding:last-child{border-bottom:0}
+.swatch{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.holding-body{flex:1;min-width:0}
+.holding-name-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.holding-name{font-size:13.5px;font-weight:700}
+.holding-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--green);letter-spacing:1px}
+.holding-badge.lock{color:#FFB300}
+.holding-sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
+.holding-val{text-align:right}
+.holding-val .v{font-family:'IBM Plex Mono',monospace;font-size:13px}
+.holding-val .p{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:2px}
+
+.lockup-num{font-family:'Archivo Black',sans-serif;font-size:34px;color:#FFB300}
+.lockup-bar{height:8px;background:#16161A;border-radius:4px;overflow:hidden;margin-top:14px}
+.lockup-bar > div{height:100%;background:#FFB300;animation:ewPulse 1.6s ease-in-out infinite}
+.lockup-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6A6A72;margin-top:10px}
+
+.footer{margin-top:42px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--fg-mute);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.footer a{color:var(--fg-dim);text-decoration:none}
+
+/* /trillion easter-egg game page */
+#trillion-page{display:none;min-height:100vh}
+#trillion-page.open{display:block}
+body.trillion-route #app-shell{display:none}
+body.trillion-route #math-page{display:none}
+body.trillion-route #trillion-page{display:block}
+.tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg)}
+.tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
+.tr-top a{color:var(--fg-dim);text-decoration:none}
+.tr-h1{font-family:'Archivo Black',sans-serif;font-size:38px;letter-spacing:-.5px;margin:20px 0 8px}
+.tr-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-dim);line-height:1.6}
+.tr-stats{display:flex;gap:8px;margin-top:18px}
+.tr-stat{flex:1;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:10px;padding:9px 0;text-align:center}
+.tr-stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:#6A6A72}
+.tr-stat .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:3px}
+.tr-stat .v.cur{color:var(--green)}
+.tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:pointer;outline:none;user-select:none;aspect-ratio:1}
+.tr-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;transition:background .12s, transform .12s}
+.tr-cell .lbl{line-height:1}
+@keyframes trSpawn {0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes trMerge {0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.tr-cell.spawn{animation:trSpawn .18s ease-out}
+.tr-cell.merge{animation:trMerge .18s ease-out}
+.tr-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);border-radius:14px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px;box-sizing:border-box}
+.tr-overlay.show{display:flex}
+.tr-overlay .big{font-family:'Archivo Black',sans-serif;font-size:48px;color:var(--green)}
+.tr-overlay .him{font-family:'Archivo Black',sans-serif;font-size:18px}
+.tr-overlay .vs{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--fg-dim)}
+.tr-overlay .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.tr-overlay .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:11px 16px;border-radius:10px;cursor:pointer;border:0}
+.tr-overlay .btn.pri{background:var(--green);color:var(--green-d);font-weight:700}
+.tr-overlay .btn.sec{background:transparent;color:var(--fg);border:1px solid #2A2A30}
+.tr-overlay .btn.retry{background:#fff;color:#000;font-weight:700}
+.tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
+.tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
+.tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
+
+/* /math FULL PAGE (no modal). Shown when route='math'. */
+#math-page{display:none;padding:0;min-height:100vh}
+#math-page.open{display:block}
+body.math-route #app-shell{display:none}
+body.math-route #math-page{display:block}
+.math-wrap{max-width:880px;margin:0 auto;padding:28px 22px 60px}
+.math-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--fg-dim);margin-bottom:16px}
+.math-eyebrow a{color:var(--green);text-decoration:none}
+.math-h1{font-family:'Archivo Black',sans-serif;font-size:clamp(34px,5vw,44px);letter-spacing:-1px;margin:8px 0 16px}
+.math-intro{font-size:15px;line-height:1.6;color:#A8A8B0;max-width:640px;margin-bottom:36px}
+.math-section{border-top:1px solid var(--line-2);padding:26px 0}
+.math-section-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.math-section-name{font-size:18px;font-weight:700;color:var(--fg)}
+.math-section-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;margin-left:8px}
+.math-section-tag.public{color:var(--green)}
+.math-section-tag.private{color:#C9A227}
+.math-section-val{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--green)}
+.math-section-val.static{color:var(--fg)}
+.math-section-formula{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#A8A8B0;margin-top:10px}
+.math-section-desc{font-size:13.5px;line-height:1.65;color:#8A8A92;margin-top:10px;max-width:700px}
+.math-source-row{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:14px;display:flex;flex-wrap:wrap;gap:14px}
+.math-source-row a{color:var(--green);text-decoration:none;border-bottom:1px solid #1E5A3A}
+.math-source-row a:hover{border-color:var(--green)}
+.math-fineprint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5A5A62;margin-top:28px;line-height:1.7;letter-spacing:.5px}
+.math-formula-box{background:#0A0A0C;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C5C5CB;line-height:1.65;overflow-x:auto;margin-top:14px}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:all .25s ease;z-index:1001;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MOBILE */
+@media (max-width:720px){
+  .shell{padding:14px 14px 32px}
+  .hero-grid{grid-template-columns:1fr;gap:24px}
+  .hero-number{font-size:clamp(46px,15vw,80px)}
+  .nav-right .btn:not(.primary){display:none}
+  .rail{order:2}
+}
+</style>
+</head>
+<body>
+
+<div class="shell" id="app-shell">
+
+  <nav class="nav">
+    <span class="brand">ELON'S WORTH</span>
+    <span class="live" id="live-dot"><span id="live-text">LIVE</span></span>
+    <span class="link-pill" id="clock-display"></span>
+    <div class="nav-right">
+      <a class="link-pill" href="/math" onclick="openMath();return false">/math</a>
+      <button class="btn muted" id="sound-btn" onclick="toggleSound()">🔇 SOUND OFF</button>
+      <button class="btn primary" id="share-btn" onclick="share()">SHARE NUMBER</button>
+    </div>
+  </nav>
+
+  <div class="hero-eyebrow" id="eyebrow">SPCX IPO'D TODAY · HE'S WORTH</div>
+
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">ELON MUSK · NET WORTH · USD</div>
+      <div class="hero-number" id="hero" onclick="onHeroTap()">$0</div>
+
+      <div class="hero-delta-row">
+        <span class="delta" id="delta">▲ $0 (0.00%) Today</span>
+        <span class="chip">TSLA <span id="tsla-px">$0</span> <span class="pct" id="tsla-pct">+0.00%</span></span>
+        <span class="chip">SPCX <span id="spcx-px">$0</span> <span class="pct" id="spcx-pct">+0.00%</span></span>
+      </div>
+
+      <div class="spark-wrap">
+        <svg class="spark" id="spark" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+        <div class="spark-meta">
+          <span>LO <span id="day-lo">—</span></span>
+          <span>SESSION · 1 TICK ≈ 2s</span>
+          <span>HI <span id="day-hi">—</span></span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <span class="active">LIVE</span>
+        <span>1D</span>
+        <span>1W</span>
+        <span>1M</span>
+        <span>ALL</span>
+      </div>
+    </div>
+
+    <aside class="rail">
+      <div class="card">
+        <div class="card-h">
+          <span class="label">HIS PORTFOLIO</span>
+          <span class="total" id="portfolio-total">$0B</span>
+        </div>
+        <div class="alloc-bar" id="alloc-bar"></div>
+        <div class="holdings-list" id="holdings"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <span class="label">PAPER WEALTH HE CAN'T TOUCH</span>
+          <span class="lockup-num" id="lockup-val">$0B</span>
+        </div>
+        <div class="lockup-bar"><div id="lockup-bar" style="width:100%"></div></div>
+        <div class="lockup-meta">
+          <span>SPCX LOCKUP · ENDS JUN 12 2027</span>
+          <span id="lockup-days">— DAYS LEFT</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="footer">
+    <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="/math" onclick="openMath();return false">SEE THE MATH ↗</a></span>
+    <span id="stale-note">QUOTE FRESH</span>
+  </div>
+</div>
+
+<div id="trillion-page">
+  <div class="tr-wrap">
+    <div class="tr-top">
+      <a href="/" onclick="closeTrillion();return false">← ELONSWORTH.COM</a>
+      <span>EASTER EGG</span>
+    </div>
+    <div class="tr-h1">MAKE A TRILLION</div>
+    <div class="tr-sub">MERGE HIS MONEY. $1B + $1B UNTIL YOU HIT $1T.</div>
+    <div class="tr-stats">
+      <div class="tr-stat"><div class="lbl">MERGED</div><div class="v cur" id="tr-score">$0</div></div>
+      <div class="tr-stat"><div class="lbl">BEST</div><div class="v" id="tr-best">$0</div></div>
+      <div class="tr-stat"><div class="lbl">PACE</div><div class="v" id="tr-time">0:00</div></div>
+    </div>
+    <div class="tr-board" id="tr-board" tabindex="0">
+      <div class="tr-overlay" id="tr-win">
+        <div class="big">$1T</div>
+        <div class="him">YOU'RE HIM NOW.</div>
+        <div class="vs">YOU: <span id="tr-win-time">0:00</span> · HIM: 54 YEARS</div>
+        <div class="row">
+          <button class="btn pri" onclick="shareTrillion()" id="tr-share-btn">SHARE YOUR RUN</button>
+          <button class="btn sec" onclick="keepMerging()">KEEP MERGING</button>
+        </div>
+      </div>
+      <div class="tr-overlay" id="tr-over">
+        <div class="him" style="color:var(--red);font-size:26px">NO MORE MOVES</div>
+        <div class="vs">EVEN HE HAS RED DAYS. MERGED: <span id="tr-over-score">$0</span></div>
+        <button class="btn retry" onclick="resetTrillion()" style="margin-top:10px">TRY AGAIN</button>
+      </div>
+    </div>
+    <div class="tr-help">SWIPE · OR CLICK BOARD + ARROW KEYS / WASD</div>
+    <div class="tr-foot">
+      <button class="new" onclick="resetTrillion()">NEW GAME</button>
+      <div class="taunt">HE TOOK 54 YEARS.<br>NO PRESSURE.</div>
+    </div>
+  </div>
+</div>
+
+<div id="math-page">
+  <div class="math-wrap">
+    <div class="math-eyebrow"><a href="/" onclick="closeMath();return false">← ELONSWORTH.COM</a> /MATH</div>
+    <h1 class="math-h1">Show your work.</h1>
+    <div class="math-intro">Every line item, every source, every assumption. The number on the front page is the sum below — public positions repriced live, private marks pinned to their last round. Last methodology review: June 12, 2026 (SPCX IPO day).</div>
+
+    <!-- SpaceX -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">SpaceX</span><span class="math-section-tag public">SPCX · PUBLIC AS OF TODAY</span></span>
+        <span class="math-section-val" id="m-spcx-val">—</span>
+      </div>
+      <div class="math-section-formula">5.25B shares × <span id="m-spcx-px">—</span> live</div>
+      <div class="math-section-desc">Musk's stake was worth $866.5B at the $135 IPO price per the updated prospectus — ~5.25B share-equivalents at his disclosed ~42% economic stake. SpaceX now contains xAI (merged Feb 2026 at a $250B xAI mark) which itself absorbed X Corp in March 2025 — so the old xAI / X line items live inside this one. IPO: $135/sh, $1.77T valuation, Nasdaq, June 12 2026.</div>
+      <div class="math-source-row">
+        <a href="https://www.cnbc.com/2026/06/03/elon-musks-net-worth-poised-to-sail-past-1-trillion-in-spacex-ipo.html" target="_blank" rel="noopener">CNBC · stake $866.5B ↗</a>
+        <a href="https://www.cnbc.com/2026/06/03/spacex-ipo-stock-price-roadshow-musk.html" target="_blank" rel="noopener">CNBC · $135 / $1.77T IPO ↗</a>
+        <a href="https://www.cnbc.com/2026/02/03/musk-xai-spacex-biggest-merger-ever.html" target="_blank" rel="noopener">CNBC · xAI merger ↗</a>
+      </div>
+    </div>
+
+    <!-- Tesla -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Tesla</span><span class="math-section-tag public">TSLA · PUBLIC</span></span>
+        <span class="math-section-val" id="m-tsla-val">—</span>
+      </div>
+      <div class="math-section-formula">~717M share-equivalents × <span id="m-tsla-px">—</span> live</div>
+      <div class="math-section-desc">~413M common shares (Revocable Trust) plus 304M options from the 2018 package, restored by the Delaware Supreme Court in Dec 2025. The 2025 CEO Performance Award adds up to 423.7M more, vesting on Tesla market-cap milestones ($2.0T–$8.5T). All 12 tranches currently <b>unvested</b>. Aggregate ~$7B exercise cost on the 2018 options not netted; flagged here instead of hidden.</div>
+      <div class="math-source-row">
+        <a href="https://www.cnbc.com/2026/06/03/elon-musks-net-worth-poised-to-sail-past-1-trillion-in-spacex-ipo.html" target="_blank" rel="noopener">CNBC · TSLA stake ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">Delaware ruling, Dec 2025 ↗</a>
+      </div>
+    </div>
+
+    <!-- Boring Company -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">The Boring Company</span><span class="math-section-tag private">PRIVATE · STATIC MARK</span></span>
+        <span class="math-section-val static">$6.3B</span>
+      </div>
+      <div class="math-section-formula">~90% × $7.0B estimated mark</div>
+      <div class="math-section-desc">Last priced round: $5.675B (Series C, Apr 2022). $7B reflects secondary-market estimates since; we hold it static and label it. Refreshed only when a new round prices.</div>
+    </div>
+
+    <!-- Neuralink -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Neuralink</span><span class="math-section-tag private">PRIVATE · STATIC MARK</span></span>
+        <span class="math-section-val static">$4.5B</span>
+      </div>
+      <div class="math-section-formula">~50% × $9.0B (Series E, Jun 2025)</div>
+      <div class="math-section-desc">$650M Series E (June 2025) at a $9B valuation. Musk's exact stake is undisclosed; ~50% is the consensus estimate and it moves the total by &lt;0.5% either way.</div>
+    </div>
+
+    <!-- Cash -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Cash &amp; other liquid</span></span>
+        <span class="math-section-val static">$5.0B</span>
+      </div>
+      <div class="math-section-desc">Estimate. He sold ~$40B of TSLA in 2021–22 (taxes + the X acquisition consumed most of it) and famously calls himself "cash poor." Anything between $2B and $10B changes the headline number by a rounding error.</div>
+    </div>
+
+    <!-- Liabilities -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Margin loans &amp; liabilities</span></span>
+        <span class="math-section-val static" style="color:var(--red)">−$7.5B</span>
+      </div>
+      <div class="math-section-desc">Estimate of TSLA pledged-share-backed borrowings and other personal liabilities. Most outlets net some version of this; the actual number is undisclosed.</div>
+    </div>
+
+    <!-- Why ≠ Forbes ≠ Bloomberg -->
+    <div class="math-section">
+      <div class="math-section-name">Why our number ≠ Forbes ≠ Bloomberg</div>
+      <div class="math-section-desc">Forbes prints ~$1.10T; Bloomberg ~$1.11T (June 2026). They apply liquidity discounts, net out option exercise costs and estimated taxes, and reprice once daily. We show gross paper math, repriced every tick, and tell you exactly that. Transparent &gt; conservative.</div>
+      <div class="math-source-row">
+        <a href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">Forbes / Bloomberg figures ↗</a>
+        <a href="https://x.ai/news/series-e" target="_blank" rel="noopener">xAI Series E ($230B, Jan 2026) ↗</a>
+      </div>
+    </div>
+
+    <!-- Canonical formula -->
+    <div class="math-section">
+      <div class="math-section-name">The formula, in plain text</div>
+      <pre class="math-formula-box" id="formula">loading…</pre>
+      <div class="math-section-desc" style="margin-top:14px">Live components for the current tick:</div>
+      <div id="math-components" style="margin-top:10px"></div>
+    </div>
+
+    <div class="math-fineprint">NOT AFFILIATED WITH ELON MUSK. NOT FINANCIAL ADVICE. ESTIMATES ONLY — PUBLIC + PRIVATE VALUATIONS COMBINED. TSLA + SPCX VIA FINANCE FEED (1–2S EDGE CACHE), PRIVATE MARKS PINNED TO LAST PRICED ROUND.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_URL = 'https://elonsworth-quotes.absoluteio.workers.dev';
+const POLL_MS = 2000;
+const SPARK_MAX = 240;
+
+let state = {
+  history: [],
+  prev: null,
+  soundOn: false,
+  lastUpdate: 0,
+  tapCount: 0,
+};
+
+function fmtMoney(n){
+  if(n==null||!isFinite(n)) return '—';
+  if(n>=1e12) return '$'+(n/1e12).toFixed(3).replace(/\.?0+$/,'')+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
+  if(n>=1e6)  return '$'+(n/1e6).toFixed(1)+'M';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtFull(n){
+  if(n==null) return '';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtMoneyPrecise(n){
+  // Hero shows like $1,140,193,872,000 collapsed to $1.140T with cents for hype
+  if(n>=1e12) return '$'+(n/1e12).toFixed(3)+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(2)+'B';
+  return fmtMoney(n);
+}
+function fmtPct(p){
+  const sign = p>=0?'+':'';
+  return sign+p.toFixed(2)+'%';
+}
+
+const clickAudio = (() => {
+  let ctx;
+  function tick(up){
+    if(!state.soundOn) return;
+    try{
+      ctx ||= new (window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = up ? 1100 : 700;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.08, ctx.currentTime+0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.08);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime+0.09);
+    }catch(e){}
+  }
+  return { tick };
+})();
+
+function showToast(msg, ms=2200){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+function toggleSound(){
+  state.soundOn = !state.soundOn;
+  document.getElementById('sound-btn').textContent = state.soundOn ? '🔊 SOUND ON' : '🔇 SOUND OFF';
+  document.getElementById('sound-btn').style.color = state.soundOn ? 'var(--green)' : 'var(--fg-dim)';
+  if(state.soundOn) clickAudio.tick(true);
+}
+
+function share(){
+  const n = state.history[state.history.length-1]?.v;
+  if(!n) return;
+  const txt = `Elon Musk is worth ${fmtMoneyPrecise(n)} right now. Watch it tick: https://elonsworth.com`;
+  if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
+    navigator.share({ title:"Elon's Worth", text: txt, url:'https://elonsworth.com' }).catch(()=>{});
+    return;
+  }
+  navigator.clipboard.writeText(txt).then(()=>showToast('COPIED — PASTE IT ANYWHERE'));
+}
+
+function onHeroTap(){
+  state.tapCount++;
+  const n = state.history[state.history.length-1]?.v;
+  if(state.tapCount === 1 && n){
+    showToast(fmtFull(n));
+  } else if(state.tapCount === 2){
+    showToast('keep tapping…');
+  } else if(state.tapCount === 5){
+    openTrillion();
+  }
+  clearTimeout(state._tapReset);
+  state._tapReset = setTimeout(()=>state.tapCount=0, 1800);
+}
+
+function openMath(){
+  history.pushState({route:'math'},'','/math');
+  document.body.classList.add('math-route');
+  document.title = '/math — Elon\'s Worth';
+  window.scrollTo(0,0);
+  populateMath();
+}
+function closeMath(){
+  history.pushState({route:'home'},'','/');
+  document.body.classList.remove('math-route');
+  document.title = "Elon's Worth — Live Net Worth Tracker";
+}
+function openTrillion(){
+  history.pushState({route:'trillion'},'','/trillion');
+  document.body.classList.remove('math-route');
+  document.body.classList.add('trillion-route');
+  document.title = '/trillion — Make a Trillion';
+  window.scrollTo(0,0);
+  if(!Trillion.started) Trillion.start();
+}
+function closeTrillion(){
+  history.pushState({route:'home'},'','/');
+  document.body.classList.remove('trillion-route');
+  document.title = "Elon's Worth — Live Net Worth Tracker";
+}
+function routeFromPath(){
+  const p = location.pathname;
+  if(p === '/math' || location.hash === '#math'){
+    document.body.classList.add('math-route');
+    document.body.classList.remove('trillion-route');
+    document.title = '/math — Elon\'s Worth';
+    populateMath();
+  } else if(p === '/trillion' || location.hash === '#trillion'){
+    document.body.classList.add('trillion-route');
+    document.body.classList.remove('math-route');
+    document.title = '/trillion — Make a Trillion';
+    if(!Trillion.started) Trillion.start();
+  } else {
+    document.body.classList.remove('math-route','trillion-route');
+    document.title = "Elon's Worth — Live Net Worth Tracker";
+  }
+}
+window.addEventListener('popstate', routeFromPath);
+
+/* ========== /trillion: 2048-clone, $1B → $1T ========== */
+const Trillion = (() => {
+  // Tile values are powers of 2 expressed in billions of $.
+  // Level: 0 (empty) | 1 ($1B) | 2 ($2B) | ... | 10 ($1T)
+  const WIN_LEVEL = 10; // 2^10 * 1B = 1024B = ~$1T
+  const COLORS = {
+    1:  ['#0F1F16', '#5BE89B'],   // 1B
+    2:  ['#0F261C', '#5BE89B'],   // 2B
+    3:  ['#103224', '#5BE89B'],   // 4B
+    4:  ['#104230', '#5BE89B'],   // 8B
+    5:  ['#0E5340', '#FFFFFF'],   // 16B
+    6:  ['#0E6850', '#FFFFFF'],   // 32B
+    7:  ['#0D8068', '#FFFFFF'],   // 64B
+    8:  ['#0AA582', '#FFFFFF'],   // 128B
+    9:  ['#06C49A', '#001A10'],   // 256B
+    10: ['#00FF85', '#00130A'],   // 1T 🔥
+  };
+  const labelFor = lvl => {
+    if(lvl === 0) return '';
+    if(lvl === WIN_LEVEL) return '$1T';
+    const billions = Math.pow(2, lvl - 1); // lvl=1 → 1B
+    if(billions >= 1000) return '$'+(billions/1000).toFixed(billions%1000?1:0).replace(/\.0$/,'')+'T';
+    return '$'+billions+'B';
+  };
+  const fsFor = lvl => {
+    const s = labelFor(lvl);
+    if(s.length <= 3) return 22;
+    if(s.length <= 4) return 19;
+    if(s.length <= 5) return 16;
+    return 13;
+  };
+
+  const S = {
+    grid: Array(4).fill().map(()=>Array(4).fill(0)),
+    score: 0,           // total merged value, in $B
+    best: 0,            // in $B
+    startMs: 0,
+    elapsedMs: 0,
+    won: false,
+    keepGoing: false,
+    started: false,
+    timer: null,
+    boundKey: false,
+  };
+
+  function fmt$(b){
+    if(b >= 1000) return '$'+(b/1000).toFixed(b%1000?2:0)+'T';
+    return '$'+b.toFixed(0)+'B';
+  }
+  function fmtTime(ms){
+    const s = Math.floor(ms/1000);
+    const m = Math.floor(s/60), r = s%60;
+    return m+':'+String(r).padStart(2,'0');
+  }
+
+  function emptyCells(){
+    const cells = [];
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(S.grid[r][c]===0) cells.push([r,c]);
+    return cells;
+  }
+  function spawn(){
+    const empties = emptyCells();
+    if(!empties.length) return null;
+    const [r,c] = empties[Math.floor(Math.random()*empties.length)];
+    // 90% chance $1B, 10% chance $2B
+    S.grid[r][c] = Math.random() < 0.9 ? 1 : 2;
+    return [r,c];
+  }
+
+  function clone(g){ return g.map(row => row.slice()); }
+
+  function slideRowLeft(row){
+    const out = row.filter(v => v !== 0);
+    const merged = new Array(out.length).fill(false);
+    let scoreGain = 0;
+    for(let i=0;i<out.length-1;i++){
+      if(out[i] === out[i+1] && !merged[i] && !merged[i+1]){
+        out[i] = out[i] + 1; // level up
+        out.splice(i+1, 1);
+        merged[i] = true;
+        scoreGain += Math.pow(2, out[i]-1); // value in $B
+      }
+    }
+    while(out.length < 4) out.push(0);
+    return { row: out, scoreGain, merged };
+  }
+
+  function rotateCW(g){
+    const r = Array(4).fill().map(()=>Array(4).fill(0));
+    for(let i=0;i<4;i++) for(let j=0;j<4;j++) r[j][3-i] = g[i][j];
+    return r;
+  }
+
+  function move(dir){
+    // 0=left, 1=up, 2=right, 3=down. Reduce to left via rotations.
+    let g = clone(S.grid);
+    const rot = (4 - dir) % 4;
+    for(let i=0;i<rot;i++) g = rotateCW(g);
+    let moved = false;
+    let scoreGain = 0;
+    let mergedReached = false;
+    for(let r=0;r<4;r++){
+      const before = g[r].slice();
+      const { row, scoreGain: sg, merged } = slideRowLeft(g[r]);
+      g[r] = row;
+      scoreGain += sg;
+      if(merged.some(m=>m)) mergedReached = true;
+      if(before.some((v,i)=>v!==row[i])) moved = true;
+    }
+    // rotate back
+    const back = (4 - rot) % 4;
+    for(let i=0;i<back;i++) g = rotateCW(g);
+    if(!moved) return false;
+    S.grid = g;
+    S.score += scoreGain;
+    if(S.score > S.best){ S.best = S.score; localStorage.setItem('ew_trillion_best', String(S.best)); }
+    spawn();
+    render();
+    // Win check
+    if(!S.won && !S.keepGoing){
+      for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(S.grid[r][c] >= WIN_LEVEL){
+        S.won = true;
+        stopTimer();
+        showWin();
+        break;
+      }
+    }
+    // Game over check
+    if(!hasMoves()){
+      stopTimer();
+      showOver();
+    }
+    return true;
+  }
+
+  function hasMoves(){
+    if(emptyCells().length) return true;
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const v = S.grid[r][c];
+      if(r<3 && S.grid[r+1][c] === v) return true;
+      if(c<3 && S.grid[r][c+1] === v) return true;
+    }
+    return false;
+  }
+
+  function render(){
+    const board = document.getElementById('tr-board');
+    if(!board) return;
+    // Build the 16 cells inline. Keep overlay nodes intact (they live as siblings).
+    let html = '';
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const lvl = S.grid[r][c];
+      const [bg, fg] = lvl ? COLORS[Math.min(lvl, WIN_LEVEL)] : ['#0A0A0E', '#FFFFFF'];
+      html += `<div class="tr-cell" style="background:${bg};color:${fg};font-size:${fsFor(lvl)}px"><span class="lbl">${labelFor(lvl)}</span></div>`;
+    }
+    // Re-attach overlays after cells
+    const winOv = document.getElementById('tr-win');
+    const overOv = document.getElementById('tr-over');
+    board.innerHTML = html;
+    board.appendChild(winOv);
+    board.appendChild(overOv);
+    document.getElementById('tr-score').textContent = fmt$(S.score);
+    document.getElementById('tr-best').textContent = fmt$(S.best);
+  }
+
+  function tickTimer(){
+    S.elapsedMs = Date.now() - S.startMs;
+    document.getElementById('tr-time').textContent = fmtTime(S.elapsedMs);
+  }
+  function startTimer(){ stopTimer(); S.startMs = Date.now() - S.elapsedMs; S.timer = setInterval(tickTimer, 250); }
+  function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer = null; } }
+
+  function showWin(){
+    document.getElementById('tr-win-time').textContent = fmtTime(S.elapsedMs);
+    document.getElementById('tr-win').classList.add('show');
+  }
+  function hideWin(){ document.getElementById('tr-win').classList.remove('show'); }
+  function showOver(){
+    document.getElementById('tr-over-score').textContent = fmt$(S.score);
+    document.getElementById('tr-over').classList.add('show');
+  }
+  function hideOver(){ document.getElementById('tr-over').classList.remove('show'); }
+
+  function reset(){
+    stopTimer();
+    S.grid = Array(4).fill().map(()=>Array(4).fill(0));
+    S.score = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false;
+    hideWin(); hideOver();
+    spawn(); spawn();
+    render();
+    document.getElementById('tr-time').textContent = '0:00';
+    startTimer();
+  }
+
+  function bindInput(){
+    if(S.boundKey) return;
+    const board = document.getElementById('tr-board');
+    if(!board) return;
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if(!document.body.classList.contains('trillion-route')) return;
+      const k = e.key.toLowerCase();
+      let dir = -1;
+      if(k === 'arrowleft' || k === 'a') dir = 0;
+      else if(k === 'arrowup' || k === 'w') dir = 1;
+      else if(k === 'arrowright' || k === 'd') dir = 2;
+      else if(k === 'arrowdown' || k === 's') dir = 3;
+      else if(k === 'escape'){ closeTrillion(); return; }
+      if(dir === -1) return;
+      e.preventDefault();
+      move(dir);
+    });
+    // Touch swipe
+    let sx=0, sy=0, t0=0;
+    board.addEventListener('touchstart', e => {
+      const t = e.touches[0]; sx=t.clientX; sy=t.clientY; t0=Date.now();
+    }, {passive:true});
+    board.addEventListener('touchend', e => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      const ax = Math.abs(dx), ay = Math.abs(dy);
+      const dt = Date.now() - t0;
+      if(Math.max(ax,ay) < 24 || dt > 600) return;
+      if(ax > ay) move(dx > 0 ? 2 : 0);
+      else move(dy > 0 ? 3 : 1);
+    }, {passive:true});
+    // Click focuses board so keyboard works
+    board.addEventListener('click', () => board.focus());
+    S.boundKey = true;
+  }
+
+  function start(){
+    S.best = parseFloat(localStorage.getItem('ew_trillion_best') || '0') || 0;
+    bindInput();
+    reset();
+    S.started = true;
+  }
+
+  return {
+    start,
+    reset,
+    keep(){ S.keepGoing = true; hideWin(); startTimer(); },
+    share(){
+      const txt = `I made $1T in ${fmtTime(S.elapsedMs)}.\nElon took 54 years.\nelonsworth.com/trillion`;
+      if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
+        navigator.share({ title:"I made a trillion", text: txt, url:'https://elonsworth.com/trillion' }).catch(()=>{});
+        return;
+      }
+      navigator.clipboard.writeText(txt).then(()=>{
+        document.getElementById('tr-share-btn').textContent = 'COPIED — PASTE IT';
+        setTimeout(()=>{ const b=document.getElementById('tr-share-btn'); if(b) b.textContent='SHARE YOUR RUN'; }, 2000);
+      });
+    },
+    get started(){ return S.started; },
+  };
+})();
+function resetTrillion(){ Trillion.reset(); }
+function keepMerging(){ Trillion.keep(); }
+function shareTrillion(){ Trillion.share(); }
+
+function populateMath(){
+  const last = state.history[state.history.length-1];
+  if(!last) return;
+  const d = last.full;
+  if(!d) return;
+  const c = d.constants;
+  const comp = d.components;
+
+  // Top-section live values
+  const tslaTotal = comp.tsla_trust + comp.tsla_2018_options + Math.max(0, comp.tsla_2025_award_vested);
+  setText('m-spcx-val', fmtMoney(comp.spcx));
+  setText('m-spcx-px', '$'+d.quotes.SPCX.p.toFixed(2));
+  setText('m-tsla-val', fmtMoney(tslaTotal));
+  setText('m-tsla-px',  '$'+d.quotes.TSLA.p.toFixed(2));
+
+  // Formula box
+  const f = document.getElementById('formula');
+  if(f) f.textContent =
+`live = TSLA × ${c.TSLA.trust_shares.toLocaleString()}                          (Revocable Trust)
+     + max(0, TSLA − ${c.TSLA.options_2018_strike}) × ${c.TSLA.options_2018_shares.toLocaleString()}     (2018 award, exercisable)
+     + max(0, TSLA − ${c.TSLA.award_2025_offset}) × ${c.TSLA.award_2025_shares_per_tranche.toLocaleString()} × vested  (2025 award; 0/${c.TSLA.award_2025_tranches_total} vested)
+     + SPCX × ${c.SPCX.musk_shares.toLocaleString()}                       (~${(c.SPCX.musk_economic_pct*100).toFixed(0)}% of ${(c.SPCX.total_shares_outstanding/1e9).toFixed(1)}B outstanding)
+     + private holdings  (Boring + Neuralink + cash, est)
+     − liabilities       (margin loans, est)`;
+
+  // Live components rows
+  const rows = [
+    ['Tesla — Trust shares', comp.tsla_trust],
+    ['Tesla — 2018 options (intrinsic)', comp.tsla_2018_options],
+    ['Tesla — 2025 award (vested only)', comp.tsla_2025_award_vested],
+    ['SpaceX (SPCX) equity', comp.spcx],
+    ['Private (Boring + Neuralink + cash, est)', comp.private_holdings],
+    ['Liabilities (margin, est)', comp.liabilities],
+    ['LIVE NET WORTH', d.net_worth],
+  ];
+  document.getElementById('math-components').innerHTML = rows.map(([l,v])=>
+    `<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #1A1A20;font-family:'IBM Plex Mono',monospace;font-size:12.5px"><span style="color:var(--fg-dim)">${l}</span><span style="color:var(--fg);text-align:right">${v<0?'−':''}${fmtMoney(Math.abs(v))}</span></div>`
+  ).join('');
+}
+function setText(id, val){ const e=document.getElementById(id); if(e) e.textContent=val; }
+
+function paintSpark(){
+  const svg = document.getElementById('spark');
+  const W = 1000, H = 200, pad = 10;
+  if(state.history.length < 2){ svg.innerHTML=''; return; }
+  const vals = state.history.map(p=>p.v);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const range = (mx-mn) || 1;
+  const pts = state.history.map((p,i)=>{
+    const x = pad + (i/(state.history.length-1)) * (W-pad*2);
+    const y = pad + (1 - (p.v-mn)/range) * (H-pad*2);
+    return [x,y];
+  });
+  const line = pts.map(([x,y],i)=>(i?`L${x.toFixed(1)},${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+  const area = `${line} L${pts[pts.length-1][0]},${H} L${pts[0][0]},${H} Z`;
+  const last = pts[pts.length-1];
+  const up = state.history[state.history.length-1].v >= state.history[0].v;
+  const color = up ? 'var(--green)' : 'var(--red)';
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${up?'#00FF85':'#FF5252'}" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="${up?'#00FF85':'#FF5252'}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#sparkFill)"/>
+    <path d="${line}" stroke="${up?'#00FF85':'#FF5252'}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${up?'#00FF85':'#FF5252'}"/>
+  `;
+}
+
+function paintHoldings(d){
+  const C = d.constants;
+  const comp = d.components;
+  const total = comp.tsla_trust + comp.tsla_2018_options + Math.max(0,comp.tsla_2025_award_vested) + comp.spcx + comp.private_holdings;
+  const lockedSpcx = d.spcx_lockup.paper_locked;
+  const tslaTotal = comp.tsla_trust + comp.tsla_2018_options + Math.max(0,comp.tsla_2025_award_vested);
+
+  const boring = 6.3e9, neuralink = 4.5e9, cash = 5e9;
+  const items = [
+    {name:'SpaceX (SPCX)',     sub:`${(C.SPCX.musk_economic_pct*100).toFixed(0)}% stake · ~5.25B shares (incl xAI)`, val:comp.spcx, color:'#00FF85', badge:'PUBLIC', lock:false},
+    {name:'Tesla (TSLA)',      sub:`Trust + 2018 options + 2025 award`, val:tslaTotal,  color:'#00B868', badge:'PUBLIC', lock:false},
+    {name:'The Boring Company',sub:`~90% × $7.0B mark`, val:boring, color:'#0A9A5C', badge:'PRIVATE', lock:false},
+    {name:'Neuralink',         sub:`~50% × $9.0B (Series E)`, val:neuralink, color:'#087549', badge:'PRIVATE', lock:false},
+    {name:'Cash & liquid',     sub:'Estimate', val:cash, color:'#055A37', badge:'EST', lock:false},
+  ];
+  const portfolioTotal = total;
+
+  document.getElementById('portfolio-total').textContent = fmtMoney(portfolioTotal);
+
+  document.getElementById('alloc-bar').innerHTML =
+    items.map(i=>`<div style="width:${(i.val/portfolioTotal*100).toFixed(2)}%;background:${i.color}"></div>`).join('');
+
+  document.getElementById('holdings').innerHTML =
+    items.map(i=>{
+      const pct = (i.val/portfolioTotal*100).toFixed(1)+'%';
+      return `<div class="holding">
+        <div class="swatch" style="background:${i.color}"></div>
+        <div class="holding-body">
+          <div class="holding-name-row">
+            <span class="holding-name">${i.name}</span>
+            <span class="holding-badge${i.lock?' lock':''}">${i.badge}</span>
+          </div>
+          <div class="holding-sub">${i.sub}</div>
+        </div>
+        <div class="holding-val">
+          <div class="v">${fmtMoney(i.val)}</div>
+          <div class="p">${pct}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  document.getElementById('lockup-val').textContent = fmtMoney(lockedSpcx);
+  const end = new Date('2027-06-12T00:00:00Z');
+  const days = Math.max(0, Math.ceil((end - Date.now())/86400000));
+  document.getElementById('lockup-days').textContent = days+' DAYS LEFT';
+}
+
+function paintChips(d){
+  const tsla = d.quotes.TSLA;
+  const spcx = d.quotes.SPCX;
+  const tPct = (tsla.p - tsla.prev) / tsla.prev * 100;
+  const sPct = (spcx.p - spcx.prev) / spcx.prev * 100;
+  document.getElementById('tsla-px').textContent = '$'+tsla.p.toFixed(2);
+  document.getElementById('tsla-pct').textContent = fmtPct(tPct);
+  document.getElementById('tsla-pct').className = 'pct ' + (tPct>=0?'up':'down');
+  document.getElementById('spcx-px').textContent = '$'+spcx.p.toFixed(2);
+  document.getElementById('spcx-pct').textContent = fmtPct(sPct);
+  document.getElementById('spcx-pct').className = 'pct ' + (sPct>=0?'up':'down');
+  document.getElementById('day-lo').textContent = fmtMoney(state.history.reduce((a,p)=>Math.min(a,p.v), Infinity));
+  document.getElementById('day-hi').textContent = fmtMoney(state.history.reduce((a,p)=>Math.max(a,p.v), -Infinity));
+}
+
+function paintHero(n, prev){
+  const hero = document.getElementById('hero');
+  hero.textContent = fmtMoneyPrecise(n);
+  hero.classList.remove('flash-up','flash-down');
+  if(prev!=null){
+    if(n>prev){ hero.classList.add('flash-up'); clickAudio.tick(true); }
+    else if(n<prev){ hero.classList.add('flash-down'); clickAudio.tick(false); }
+  }
+  // delta vs previous day open (approx from prev close TSLA + SPCX)
+  // We compute it as: net worth at current quotes vs net worth at prev-close quotes
+}
+
+function paintDelta(d){
+  const C = d.constants;
+  // Net worth at previous close
+  const T = d.quotes.TSLA.prev, S = d.quotes.SPCX.prev;
+  const prevWorth =
+      C.TSLA.trust_shares * T
+    + C.TSLA.options_2018_shares * Math.max(0, T - C.TSLA.options_2018_strike)
+    + C.SPCX.musk_shares * S
+    + (C.PRIVATE.boring_company_est + C.PRIVATE.neuralink_est + C.PRIVATE.cash_residual_est)
+    - C.LIABILITIES.margin_loans_est;
+  const diff = d.net_worth - prevWorth;
+  const pct = diff / prevWorth * 100;
+  const el = document.getElementById('delta');
+  const arrow = diff>=0 ? '▲' : '▼';
+  el.textContent = `${arrow} ${fmtMoney(Math.abs(diff))} (${fmtPct(pct)}) Today`;
+  el.className = 'delta ' + (diff>=0?'up':'down');
+}
+
+async function tick(){
+  try {
+    const r = await fetch(API_URL + '/api/net-worth', {cache:'no-store'});
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+
+    const n = d.net_worth;
+    const prev = state.history[state.history.length-1]?.v;
+    state.history.push({ t: Date.now(), v: n, full: d });
+    if(state.history.length > SPARK_MAX) state.history.shift();
+    state.lastUpdate = Date.now();
+
+    paintHero(n, prev);
+    paintDelta(d);
+    paintChips(d);
+    paintHoldings(d);
+    paintSpark();
+
+    // live status
+    const ageS = (Date.now()/1000 - d.asof);
+    const dot = document.getElementById('live-dot');
+    const txt = document.getElementById('live-text');
+    document.getElementById('stale-note').textContent =
+      ageS < 60 ? 'QUOTE FRESH' : `Last quote ${Math.round(ageS/60)}min old · feed cached`;
+    if(ageS < 90){ dot.classList.remove('stale','dead'); txt.textContent='LIVE'; }
+    else if(ageS < 60*30){ dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent='DELAYED'; }
+    else { dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent='CACHED'; }
+
+    if(document.body.classList.contains('math-route')) populateMath();
+
+  } catch(e) {
+    console.error('tick fail', e);
+    document.getElementById('live-dot').classList.add('dead');
+    document.getElementById('live-text').textContent='OFFLINE';
+  }
+}
+
+function clockTick(){
+  const d = new Date();
+  const fmt = d.toLocaleTimeString('en-US',{timeZone:'America/New_York', hour12:false}) + ' ET';
+  document.getElementById('clock-display').textContent = fmt;
+}
+
+setInterval(tick, POLL_MS);
+setInterval(clockTick, 1000);
+clockTick();
+tick();
+routeFromPath();
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('math-route')) closeMath(); });
+</script>
+</body>
+</html>
