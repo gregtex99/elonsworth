@@ -1,0 +1,12 @@
+name = "elonsworth-quotes"
+main = "src/index.ts"
+compatibility_date = "2026-06-12"
+compatibility_flags = ["nodejs_compat"]
+
+# Custom domain wired post-domain-setup
+# [[routes]]
+# pattern = "api.elonsworth.com/*"
+# zone_name = "elonsworth.com"
+
+[observability]
+enabled = true
