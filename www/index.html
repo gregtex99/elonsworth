@@ -107,18 +107,31 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .footer{margin-top:42px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--fg-mute);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .footer a{color:var(--fg-dim);text-decoration:none}
 
-#math-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;backdrop-filter:blur(6px)}
-#math-modal.open{display:flex}
-.math-card{background:var(--bg-2);border:1px solid var(--line);border-radius:18px;max-width:760px;width:100%;padding:32px;color:var(--fg);font-family:'Space Grotesk',sans-serif}
-.math-card h2{font-family:'Archivo Black',sans-serif;font-size:28px;margin:0 0 6px;letter-spacing:-.5px}
-.math-card h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--fg-dim);margin:28px 0 12px;text-transform:uppercase}
-.math-card p{line-height:1.55;color:#C5C5CB;margin:8px 0;font-size:14px}
-.math-card .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:13px}
-.math-card .row:last-child{border-bottom:0}
-.math-card .row .label{color:var(--fg-dim)}
-.math-card .row .val{color:var(--fg);text-align:right}
-.math-card .close{position:absolute;top:12px;right:14px;font-size:18px;color:var(--fg-dim);cursor:pointer;background:transparent;border:0}
-.math-card pre{background:#0A0A0C;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C5C5CB;line-height:1.55}
+/* /math FULL PAGE (no modal). Shown when route='math'. */
+#math-page{display:none;padding:0;min-height:100vh}
+#math-page.open{display:block}
+body.math-route #app-shell{display:none}
+body.math-route #math-page{display:block}
+.math-wrap{max-width:880px;margin:0 auto;padding:28px 22px 60px}
+.math-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--fg-dim);margin-bottom:16px}
+.math-eyebrow a{color:var(--green);text-decoration:none}
+.math-h1{font-family:'Archivo Black',sans-serif;font-size:clamp(34px,5vw,44px);letter-spacing:-1px;margin:8px 0 16px}
+.math-intro{font-size:15px;line-height:1.6;color:#A8A8B0;max-width:640px;margin-bottom:36px}
+.math-section{border-top:1px solid var(--line-2);padding:26px 0}
+.math-section-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.math-section-name{font-size:18px;font-weight:700;color:var(--fg)}
+.math-section-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;margin-left:8px}
+.math-section-tag.public{color:var(--green)}
+.math-section-tag.private{color:#C9A227}
+.math-section-val{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--green)}
+.math-section-val.static{color:var(--fg)}
+.math-section-formula{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#A8A8B0;margin-top:10px}
+.math-section-desc{font-size:13.5px;line-height:1.65;color:#8A8A92;margin-top:10px;max-width:700px}
+.math-source-row{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:14px;display:flex;flex-wrap:wrap;gap:14px}
+.math-source-row a{color:var(--green);text-decoration:none;border-bottom:1px solid #1E5A3A}
+.math-source-row a:hover{border-color:var(--green)}
+.math-fineprint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5A5A62;margin-top:28px;line-height:1.7;letter-spacing:.5px}
+.math-formula-box{background:#0A0A0C;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C5C5CB;line-height:1.65;overflow-x:auto;margin-top:14px}
 
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:all .25s ease;z-index:1001;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -135,14 +148,14 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 </head>
 <body>
 
-<div class="shell">
+<div class="shell" id="app-shell">
 
   <nav class="nav">
     <span class="brand">ELON'S WORTH</span>
     <span class="live" id="live-dot"><span id="live-text">LIVE</span></span>
     <span class="link-pill" id="clock-display"></span>
     <div class="nav-right">
-      <a class="link-pill" href="#" onclick="openMath();return false">/math</a>
+      <a class="link-pill" href="/math" onclick="openMath();return false">/math</a>
       <button class="btn muted" id="sound-btn" onclick="toggleSound()">🔇 SOUND OFF</button>
       <button class="btn primary" id="share-btn" onclick="share()">SHARE NUMBER</button>
     </div>
@@ -204,36 +217,103 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
   </div>
 
   <div class="footer">
-    <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="#" onclick="openMath();return false">SEE THE MATH ↗</a></span>
+    <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="/math" onclick="openMath();return false">SEE THE MATH ↗</a></span>
     <span id="stale-note">QUOTE FRESH</span>
   </div>
 </div>
 
-<div id="math-modal" onclick="if(event.target===this)closeMath()">
-  <div class="math-card" style="position:relative">
-    <button class="close" onclick="closeMath()">✕</button>
-    <h2>THE MATH</h2>
-    <p>Every number on this page is computed from public data. Click anywhere outside to close.</p>
+<div id="math-page">
+  <div class="math-wrap">
+    <div class="math-eyebrow"><a href="/" onclick="closeMath();return false">← ELONSWORTH.COM</a> /MATH</div>
+    <h1 class="math-h1">Show your work.</h1>
+    <div class="math-intro">Every line item, every source, every assumption. The number on the front page is the sum below — public positions repriced live, private marks pinned to their last round. Last methodology review: June 12, 2026 (SPCX IPO day).</div>
 
-    <h3>THE FORMULA</h3>
-    <pre id="formula">loading…</pre>
+    <!-- SpaceX -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">SpaceX</span><span class="math-section-tag public">SPCX · PUBLIC AS OF TODAY</span></span>
+        <span class="math-section-val" id="m-spcx-val">—</span>
+      </div>
+      <div class="math-section-formula">5.25B shares × <span id="m-spcx-px">—</span> live</div>
+      <div class="math-section-desc">Musk's stake was worth $866.5B at the $135 IPO price per the updated prospectus — ~5.25B share-equivalents at his disclosed ~42% economic stake. SpaceX now contains xAI (merged Feb 2026 at a $250B xAI mark) which itself absorbed X Corp in March 2025 — so the old xAI / X line items live inside this one. IPO: $135/sh, $1.77T valuation, Nasdaq, June 12 2026.</div>
+      <div class="math-source-row">
+        <a href="https://www.cnbc.com/2026/06/03/elon-musks-net-worth-poised-to-sail-past-1-trillion-in-spacex-ipo.html" target="_blank" rel="noopener">CNBC · stake $866.5B ↗</a>
+        <a href="https://www.cnbc.com/2026/06/03/spacex-ipo-stock-price-roadshow-musk.html" target="_blank" rel="noopener">CNBC · $135 / $1.77T IPO ↗</a>
+        <a href="https://www.cnbc.com/2026/02/03/musk-xai-spacex-biggest-merger-ever.html" target="_blank" rel="noopener">CNBC · xAI merger ↗</a>
+      </div>
+    </div>
 
-    <h3>LIVE COMPONENTS</h3>
-    <div id="math-components"></div>
+    <!-- Tesla -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Tesla</span><span class="math-section-tag public">TSLA · PUBLIC</span></span>
+        <span class="math-section-val" id="m-tsla-val">—</span>
+      </div>
+      <div class="math-section-formula">~717M share-equivalents × <span id="m-tsla-px">—</span> live</div>
+      <div class="math-section-desc">~413M common shares (Revocable Trust) plus 304M options from the 2018 package, restored by the Delaware Supreme Court in Dec 2025. The 2025 CEO Performance Award adds up to 423.7M more, vesting on Tesla market-cap milestones ($2.0T–$8.5T). All 12 tranches currently <b>unvested</b>. Aggregate ~$7B exercise cost on the 2018 options not netted; flagged here instead of hidden.</div>
+      <div class="math-source-row">
+        <a href="https://www.cnbc.com/2026/06/03/elon-musks-net-worth-poised-to-sail-past-1-trillion-in-spacex-ipo.html" target="_blank" rel="noopener">CNBC · TSLA stake ↗</a>
+        <a href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">Delaware ruling, Dec 2025 ↗</a>
+      </div>
+    </div>
 
-    <h3>CONSTANTS</h3>
-    <div id="math-constants"></div>
+    <!-- Boring Company -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">The Boring Company</span><span class="math-section-tag private">PRIVATE · STATIC MARK</span></span>
+        <span class="math-section-val static">$6.3B</span>
+      </div>
+      <div class="math-section-formula">~90% × $7.0B estimated mark</div>
+      <div class="math-section-desc">Last priced round: $5.675B (Series C, Apr 2022). $7B reflects secondary-market estimates since; we hold it static and label it. Refreshed only when a new round prices.</div>
+    </div>
 
-    <h3>UNVESTED 2025 TESLA AWARD (GHOST METER)</h3>
-    <p style="font-size:13px">The 2025 CEO Performance Award is 423.7M restricted shares across 12 tranches, each vesting on Tesla market-cap milestones from $2.0T to $8.5T (plus operational milestones). All <b>currently unvested</b>. If all vested at the current TSLA price, it would add <b id="ghost-val">$0B</b>.</p>
+    <!-- Neuralink -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Neuralink</span><span class="math-section-tag private">PRIVATE · STATIC MARK</span></span>
+        <span class="math-section-val static">$4.5B</span>
+      </div>
+      <div class="math-section-formula">~50% × $9.0B (Series E, Jun 2025)</div>
+      <div class="math-section-desc">$650M Series E (June 2025) at a $9B valuation. Musk's exact stake is undisclosed; ~50% is the consensus estimate and it moves the total by &lt;0.5% either way.</div>
+    </div>
 
-    <h3>SOURCES</h3>
-    <p style="font-size:13px;line-height:1.7">
-      · SpaceX S-1 (May 20, 2026) — share counts &amp; lockup<br>
-      · Schedule 13G/A (Apr 16, 2026) — Tesla holdings<br>
-      · 2025 CEO Performance Award (shareholder-approved Nov 6, 2025)<br>
-      · Live quotes via finance feed (delayed up to 15min off-hours)
-    </p>
+    <!-- Cash -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Cash &amp; other liquid</span></span>
+        <span class="math-section-val static">$5.0B</span>
+      </div>
+      <div class="math-section-desc">Estimate. He sold ~$40B of TSLA in 2021–22 (taxes + the X acquisition consumed most of it) and famously calls himself "cash poor." Anything between $2B and $10B changes the headline number by a rounding error.</div>
+    </div>
+
+    <!-- Liabilities -->
+    <div class="math-section">
+      <div class="math-section-row">
+        <span><span class="math-section-name">Margin loans &amp; liabilities</span></span>
+        <span class="math-section-val static" style="color:var(--red)">−$7.5B</span>
+      </div>
+      <div class="math-section-desc">Estimate of TSLA pledged-share-backed borrowings and other personal liabilities. Most outlets net some version of this; the actual number is undisclosed.</div>
+    </div>
+
+    <!-- Why ≠ Forbes ≠ Bloomberg -->
+    <div class="math-section">
+      <div class="math-section-name">Why our number ≠ Forbes ≠ Bloomberg</div>
+      <div class="math-section-desc">Forbes prints ~$1.10T; Bloomberg ~$1.11T (June 2026). They apply liquidity discounts, net out option exercise costs and estimated taxes, and reprice once daily. We show gross paper math, repriced every tick, and tell you exactly that. Transparent &gt; conservative.</div>
+      <div class="math-source-row">
+        <a href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">Forbes / Bloomberg figures ↗</a>
+        <a href="https://x.ai/news/series-e" target="_blank" rel="noopener">xAI Series E ($230B, Jan 2026) ↗</a>
+      </div>
+    </div>
+
+    <!-- Canonical formula -->
+    <div class="math-section">
+      <div class="math-section-name">The formula, in plain text</div>
+      <pre class="math-formula-box" id="formula">loading…</pre>
+      <div class="math-section-desc" style="margin-top:14px">Live components for the current tick:</div>
+      <div id="math-components" style="margin-top:10px"></div>
+    </div>
+
+    <div class="math-fineprint">NOT AFFILIATED WITH ELON MUSK. NOT FINANCIAL ADVICE. ESTIMATES ONLY — PUBLIC + PRIVATE VALUATIONS COMBINED. TSLA + SPCX VIA FINANCE FEED (1–2S EDGE CACHE), PRIVATE MARKS PINNED TO LAST PRICED ROUND.</div>
   </div>
 </div>
 
@@ -326,38 +406,65 @@ function onHeroTap(){
   const n = state.history[state.history.length-1]?.v;
   if(state.tapCount === 1 && n){
     showToast(fmtFull(n));
-  }else if(state.tapCount === 5){
-    showToast('🥚 something is coming…');
+  } else if(state.tapCount === 2){
+    showToast('keep tapping…');
+  } else if(state.tapCount === 5){
+    showToast('🥚 coming soon: make your own trillion');
   }
   clearTimeout(state._tapReset);
   state._tapReset = setTimeout(()=>state.tapCount=0, 1800);
 }
 
 function openMath(){
-  document.getElementById('math-modal').classList.add('open');
-  document.body.style.overflow='hidden';
+  history.pushState({route:'math'},'','/math');
+  document.body.classList.add('math-route');
+  document.title = '/math — Elon\'s Worth';
+  window.scrollTo(0,0);
   populateMath();
 }
 function closeMath(){
-  document.getElementById('math-modal').classList.remove('open');
-  document.body.style.overflow='';
+  history.pushState({route:'home'},'','/');
+  document.body.classList.remove('math-route');
+  document.title = "Elon's Worth — Live Net Worth Tracker";
 }
+function routeFromPath(){
+  if(location.pathname === '/math' || location.hash === '#math'){
+    document.body.classList.add('math-route');
+    document.title = '/math — Elon\'s Worth';
+    populateMath();
+  } else {
+    document.body.classList.remove('math-route');
+    document.title = "Elon's Worth — Live Net Worth Tracker";
+  }
+}
+window.addEventListener('popstate', routeFromPath);
 
 function populateMath(){
   const last = state.history[state.history.length-1];
   if(!last) return;
   const d = last.full;
   if(!d) return;
+  const c = d.constants;
+  const comp = d.components;
 
-  document.getElementById('formula').textContent =
-`live = TSLA × 413,200,000                                  (Revocable Trust)
-     + max(0, TSLA - 23.34) × 304,000,000                  (2018 award, exercisable)
-     + max(0, TSLA - 334.09) × 35,311,992 × vested         (2025 award; 0/12 vested)
-     + SPCX × 5,250,000,000                                (~42% of 12.5B outstanding)
+  // Top-section live values
+  const tslaTotal = comp.tsla_trust + comp.tsla_2018_options + Math.max(0, comp.tsla_2025_award_vested);
+  setText('m-spcx-val', fmtMoney(comp.spcx));
+  setText('m-spcx-px', '$'+d.quotes.SPCX.p.toFixed(2));
+  setText('m-tsla-val', fmtMoney(tslaTotal));
+  setText('m-tsla-px',  '$'+d.quotes.TSLA.p.toFixed(2));
+
+  // Formula box
+  const f = document.getElementById('formula');
+  if(f) f.textContent =
+`live = TSLA × ${c.TSLA.trust_shares.toLocaleString()}                          (Revocable Trust)
+     + max(0, TSLA − ${c.TSLA.options_2018_strike}) × ${c.TSLA.options_2018_shares.toLocaleString()}     (2018 award, exercisable)
+     + max(0, TSLA − ${c.TSLA.award_2025_offset}) × ${c.TSLA.award_2025_shares_per_tranche.toLocaleString()} × vested  (2025 award; 0/${c.TSLA.award_2025_tranches_total} vested)
+     + SPCX × ${c.SPCX.musk_shares.toLocaleString()}                       (~${(c.SPCX.musk_economic_pct*100).toFixed(0)}% of ${(c.SPCX.total_shares_outstanding/1e9).toFixed(1)}B outstanding)
      + private holdings  (Boring + Neuralink + cash, est)
      − liabilities       (margin loans, est)`;
 
-  const comp = d.components;
+  // Live components rows
   const rows = [
     ['Tesla — Trust shares', comp.tsla_trust],
     ['Tesla — 2018 options (intrinsic)', comp.tsla_2018_options],
@@ -368,24 +475,10 @@ function populateMath(){
     ['LIVE NET WORTH', d.net_worth],
   ];
   document.getElementById('math-components').innerHTML = rows.map(([l,v])=>
-    `<div class="row"><span class="label">${l}</span><span class="val">${v<0?'-':''}${fmtMoney(Math.abs(v))}</span></div>`
+    `<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #1A1A20;font-family:'IBM Plex Mono',monospace;font-size:12.5px"><span style="color:var(--fg-dim)">${l}</span><span style="color:var(--fg);text-align:right">${v<0?'−':''}${fmtMoney(Math.abs(v))}</span></div>`
   ).join('');
-
-  const c = d.constants;
-  const csts = [
-    ['TSLA trust shares', c.TSLA.trust_shares.toLocaleString()],
-    ['TSLA 2018 award options', c.TSLA.options_2018_shares.toLocaleString()+' @ $'+c.TSLA.options_2018_strike+' strike'],
-    ['TSLA 2025 award', c.TSLA.award_2025_shares_per_tranche.toLocaleString()+' × '+c.TSLA.award_2025_tranches_total+' tranches @ $'+c.TSLA.award_2025_offset+' offset'],
-    ['SPCX total shares outstanding', c.SPCX.total_shares_outstanding.toLocaleString()],
-    ['Musk SPCX economic stake', (c.SPCX.musk_economic_pct*100).toFixed(1)+'% = '+c.SPCX.musk_shares.toLocaleString()+' shares'],
-    ['SPCX Musk lockup ends', c.SPCX.musk_lockup_end+' (366 days, no early release)'],
-  ];
-  document.getElementById('math-constants').innerHTML = csts.map(([l,v])=>
-    `<div class="row"><span class="label">${l}</span><span class="val">${v}</span></div>`
-  ).join('');
-
-  document.getElementById('ghost-val').textContent = fmtMoney(d.unvested_award_potential);
 }
+function setText(id, val){ const e=document.getElementById(id); if(e) e.textContent=val; }
 
 function paintSpark(){
   const svg = document.getElementById('spark');
@@ -424,10 +517,13 @@ function paintHoldings(d){
   const lockedSpcx = d.spcx_lockup.paper_locked;
   const tslaTotal = comp.tsla_trust + comp.tsla_2018_options + Math.max(0,comp.tsla_2025_award_vested);
 
+  const boring = 6.3e9, neuralink = 4.5e9, cash = 5e9;
   const items = [
-    {name:'SpaceX (SPCX)', sub:`${(C.SPCX.musk_economic_pct*100).toFixed(0)}% stake · ~5.25B shares`, val:comp.spcx, color:'#00FF85', badge:'PUBLIC', lock:false},
-    {name:'Tesla (TSLA)',  sub:`717M shares + options · 20.3%`, val:tslaTotal,  color:'#00B868', badge:'PUBLIC', lock:false},
-    {name:'Private holdings', sub:'Boring + Neuralink + cash', val:comp.private_holdings, color:'#0A9A5C', badge:'EST',    lock:false},
+    {name:'SpaceX (SPCX)',     sub:`${(C.SPCX.musk_economic_pct*100).toFixed(0)}% stake · ~5.25B shares (incl xAI)`, val:comp.spcx, color:'#00FF85', badge:'PUBLIC', lock:false},
+    {name:'Tesla (TSLA)',      sub:`Trust + 2018 options + 2025 award`, val:tslaTotal,  color:'#00B868', badge:'PUBLIC', lock:false},
+    {name:'The Boring Company',sub:`~90% × $7.0B mark`, val:boring, color:'#0A9A5C', badge:'PRIVATE', lock:false},
+    {name:'Neuralink',         sub:`~50% × $9.0B (Series E)`, val:neuralink, color:'#087549', badge:'PRIVATE', lock:false},
+    {name:'Cash & liquid',     sub:'Estimate', val:cash, color:'#055A37', badge:'EST', lock:false},
   ];
   const portfolioTotal = total;
 
@@ -534,7 +630,7 @@ async function tick(){
     else if(ageS < 60*30){ dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent='DELAYED'; }
     else { dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent='CACHED'; }
 
-    if(document.getElementById('math-modal').classList.contains('open')) populateMath();
+    if(document.body.classList.contains('math-route')) populateMath();
 
   } catch(e) {
     console.error('tick fail', e);
@@ -553,8 +649,9 @@ setInterval(tick, POLL_MS);
 setInterval(clockTick, 1000);
 clockTick();
 tick();
+routeFromPath();
 
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMath(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('math-route')) closeMath(); });
 </script>
 </body>
 </html>
