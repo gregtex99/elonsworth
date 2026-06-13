@@ -10,3 +10,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [observability]
 enabled = true
+
+# Last-good quote cache. Survives provider outages and SPCX halts.
+[[kv_namespaces]]
+binding = "QUOTES_KV"
+id = "61503f88acef4676a6d23fdb2f1cd9d7"

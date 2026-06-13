@@ -975,15 +975,30 @@ async function tick(){
     paintHoldings(d);
     paintSpark();
 
-    // live status
+    // live status: honor server-reported data_quality first, fall back to age
+    const dq = d.data_quality || {};
     const ageS = (Date.now()/1000 - d.asof);
     const dot = document.getElementById('live-dot');
     const txt = document.getElementById('live-text');
-    document.getElementById('stale-note').textContent =
-      ageS < 60 ? 'QUOTE FRESH' : `Last quote ${Math.round(ageS/60)}min old · feed cached`;
-    if(ageS < 90){ dot.classList.remove('stale','dead'); txt.textContent='LIVE'; }
-    else if(ageS < 60*30){ dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent='DELAYED'; }
-    else { dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent='CACHED'; }
+    const note = document.getElementById('stale-note');
+    if(dq.any_cached){
+      dot.classList.remove('stale'); dot.classList.add('dead');
+      txt.textContent = 'CACHED';
+      const which = Object.entries(dq.sources||{}).filter(([_,v])=>v==='cache').map(([k])=>k).join('+');
+      note.textContent = which
+        ? `${which} feed down · showing last-good (${Math.round((dq.max_stale_sec||ageS)/60)}min old)`
+        : `Feed down · showing last-good (${Math.round(ageS/60)}min old)`;
+    } else if(ageS < 90){
+      dot.classList.remove('stale','dead'); txt.textContent = 'LIVE';
+      const src = dq.sources?.TSLA && dq.sources?.SPCX && dq.sources.TSLA===dq.sources.SPCX ? dq.sources.TSLA.toUpperCase() : '';
+      note.textContent = src ? `LIVE · ${src}` : 'QUOTE FRESH';
+    } else if(ageS < 60*30){
+      dot.classList.remove('dead'); dot.classList.add('stale'); txt.textContent = 'DELAYED';
+      note.textContent = `Last quote ${Math.round(ageS/60)}min old`;
+    } else {
+      dot.classList.remove('stale'); dot.classList.add('dead'); txt.textContent = 'CACHED';
+      note.textContent = `Last quote ${Math.round(ageS/60)}min old · feed cached`;
+    }
 
     if(document.body.classList.contains('math-route')) populateMath();
 
