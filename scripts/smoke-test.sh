@@ -58,11 +58,16 @@ check "worker tsc" bash -c "cd worker && npx tsc --noEmit"
 
 ylw ""
 ylw "=== Worker API checks ==="
-WORKER_URL="https://elonsworth-quotes.absoluteio.workers.dev"
-check "/healthz" bash -c "curl -fs --max-time 5 $WORKER_URL/healthz | grep -q ok"
-check "/api/quote returns valid JSON" bash -c "curl -fs --max-time 5 $WORKER_URL/api/quote | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d[\"quotes\"][\"TSLA\"][\"p\"] > 0; assert d[\"quotes\"][\"SPCX\"][\"p\"] > 0'"
-check "/api/net-worth returns sane value" bash -c "curl -fs --max-time 5 $WORKER_URL/api/net-worth | python3 -c 'import json,sys; d=json.load(sys.stdin); nw=d[\"net_worth\"]; assert 5e11 < nw < 2e12, f\"net_worth out of range: {nw}\"'"
-check "/api/formula returns constants" bash -c "curl -fs --max-time 5 $WORKER_URL/api/formula | python3 -c 'import json,sys; d=json.load(sys.stdin); assert \"TSLA\" in d[\"constants\"]'"
+WORKER_URL="https://api.elonsworth.com"
+# Resolve via Cloudflare edge IP if local DNS is broken (Tailscale interception, etc.)
+RESOLVE_OPTS=""
+if ! getent hosts api.elonsworth.com >/dev/null 2>&1 && ! host api.elonsworth.com >/dev/null 2>&1; then
+  RESOLVE_OPTS="--resolve api.elonsworth.com:443:172.66.47.9"
+fi
+check "/healthz" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/healthz | grep -q ok"
+check "/api/quote returns valid JSON" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/quote | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d[\"quotes\"][\"TSLA\"][\"p\"] > 0; assert d[\"quotes\"][\"SPCX\"][\"p\"] > 0'"
+check "/api/net-worth returns sane value" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/net-worth | python3 -c 'import json,sys; d=json.load(sys.stdin); nw=d[\"net_worth\"]; assert 5e11 < nw < 2e12, f\"net_worth out of range: {nw}\"'"
+check "/api/formula returns constants" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/formula | python3 -c 'import json,sys; d=json.load(sys.stdin); assert \"TSLA\" in d[\"constants\"]'"
 
 if [ -n "$TARGET" ]; then
   ylw ""
