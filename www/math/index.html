@@ -85,9 +85,14 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .chip .pct.down{color:var(--red)}
 
 /* spark */
-.spark-wrap{margin-top:32px}
-.spark{width:100%;height:140px;display:block}
+.spark-wrap{margin-top:32px;position:relative}
+.spark{width:100%;height:140px;display:block;touch-action:none;cursor:crosshair}
 .spark-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-faint);margin-top:8px}
+.spark-tip{position:absolute;top:-44px;background:var(--bg-2);border:1px solid rgba(0,255,133,.35);border-radius:8px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg);pointer-events:none;display:none;z-index:5;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.6)}
+.spark-tip .v{color:var(--green);font-weight:700;font-size:14px}
+.spark-tip .d{color:var(--fg-dim);margin-top:1px;letter-spacing:1px;font-size:10px}
+.spark-tip.down .v{color:var(--red)}
+.spark-tip.down{border-color:rgba(255,82,82,.35)}
 
 /* tabs */
 .tabs{display:flex;gap:26px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;margin-top:18px;padding-bottom:6px}
@@ -261,9 +266,10 @@ body.math-route #math-page{display:block}
 
       <div class="spark-wrap">
         <svg class="spark" id="spark" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+        <div class="spark-tip" id="spark-tip"><div class="v" id="spark-tip-v">—</div><div class="d" id="spark-tip-d">—</div></div>
         <div class="spark-meta">
           <span>LO <span id="day-lo">—</span></span>
-          <span>SESSION · 1 TICK ≈ 1.6S</span>
+          <span id="spark-meta-mid">SESSION · 1 TICK ≈ 1.6S</span>
           <span>HI <span id="day-hi">—</span></span>
         </div>
       </div>
@@ -389,7 +395,7 @@ body.math-route #math-page{display:block}
         <span><span class="math-section-name">Tesla</span><span class="math-section-tag public">TSLA · PUBLIC</span></span>
         <span class="math-section-val" id="m-tsla-val">—</span>
       </div>
-      <div class="math-section-formula">~717M share-equivalents × <span id="m-tsla-px">—</span> live</div>
+      <div class="math-section-formula">413M trust × <span id="m-tsla-px">—</span> + 304M options × max(0, <span id="m-tsla-px-2">—</span> − $23.34)</div>
       <div class="math-section-desc">~413M common shares (Revocable Trust) plus 304M options from the 2018 package, restored by the Delaware Supreme Court in Dec 2025. The 2025 CEO Performance Award adds up to 423.7M more, vesting on Tesla market-cap milestones ($2.0T–$8.5T). All 12 tranches currently <b>unvested</b>. Aggregate ~$7B exercise cost on the 2018 options not netted; flagged here instead of hidden.</div>
       <div class="math-source-row">
         <a href="https://www.cnbc.com/2026/06/03/elon-musks-net-worth-poised-to-sail-past-1-trillion-in-spacex-ipo.html" target="_blank" rel="noopener">CNBC · TSLA stake ↗</a>
@@ -914,6 +920,7 @@ function populateMath(){
   setText('m-spcx-px', '$'+d.quotes.SPCX.p.toFixed(2));
   setText('m-tsla-val', fmtMoney(tslaTotal));
   setText('m-tsla-px',  '$'+d.quotes.TSLA.p.toFixed(2));
+  setText('m-tsla-px-2', '$'+d.quotes.TSLA.p.toFixed(2));
 
   // Formula box
   const f = document.getElementById('formula');
@@ -989,6 +996,11 @@ function paintSpark(){
   // Build baseline visual: dashed line + small label
   const baseDash = `<line x1="${pad}" y1="${baseY.toFixed(1)}" x2="${W-pad}" y2="${baseY.toFixed(1)}" stroke="#5A5A66" stroke-width="1" stroke-dasharray="4 6" opacity="0.7"/>
         <text x="${W-pad-4}" y="${(baseY - 6).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9A9AA8" letter-spacing="1">OPEN</text>`;
+  // Stash projection state for the scrubber so the pointer handler can map x → index → value.
+  state.sparkProj = {
+    series, W, H, pad, mnE, mxE, rngE, baseVal, baseY, color, up,
+    fromIndex: i => i,
+  };
   svg.innerHTML = `
     <defs>
       <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
@@ -1000,8 +1012,125 @@ function paintSpark(){
     <path d="${areaE}" fill="url(#sparkFill)"/>
     <path d="${lineE}" stroke="${up?'#00FF85':'#FF5252'}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${lastE[0]}" cy="${lastE[1]}" r="4" fill="${up?'#00FF85':'#FF5252'}"/>
+    <g id="spark-crosshair" style="display:none">
+      <line id="spark-crosshair-line" x1="0" y1="${pad}" x2="0" y2="${H-pad}" stroke="#9A9AA8" stroke-width="1" stroke-dasharray="3 4" opacity="0.8"/>
+      <circle id="spark-crosshair-dot" cx="0" cy="0" r="5" fill="${up?'#00FF85':'#FF5252'}" stroke="#0A0A0F" stroke-width="2"/>
+    </g>
   `;
 }
+
+// Scrub/crosshair: hover or drag across the spark to see the value at that point
+(function bindSparkScrub(){
+  const svg = document.getElementById('spark');
+  const tip = document.getElementById('spark-tip');
+  const tipV = document.getElementById('spark-tip-v');
+  const tipD = document.getElementById('spark-tip-d');
+  if(!svg || !tip) return;
+  let active = false;
+
+  function fmtTipDate(t, range){
+    const d = new Date(t);
+    if(range === 'live' || range === '1d'){
+      // Intraday: time of day (in NY market tz)
+      return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true, timeZone:'America/New_York' }) + ' ET';
+    }
+    if(range === '5d'){
+      return d.toLocaleString('en-US', { weekday:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone:'America/New_York' });
+    }
+    if(range === '1mo' || range === '3mo' || range === '6mo'){
+      return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    }
+    return d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+  }
+
+  function fmtTipValue(v){
+    if(v >= 1e12) return '$' + (v/1e12).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') + 'T';
+    if(v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
+    return '$' + Math.round(v).toLocaleString();
+  }
+
+  function update(clientX){
+    const proj = state.sparkProj;
+    if(!proj || !proj.series || proj.series.length < 2) return;
+    state.scrubbing = true;
+    const rect = svg.getBoundingClientRect();
+    const xPxClient = clientX - rect.left;
+    // viewBox is 1000 wide; convert client px to viewBox px
+    const xVb = (xPxClient / rect.width) * proj.W;
+    const xMin = proj.pad, xMax = proj.W - proj.pad;
+    const xClamp = Math.max(xMin, Math.min(xMax, xVb));
+    const frac = (xClamp - xMin) / (xMax - xMin);
+    const idx = Math.round(frac * (proj.series.length - 1));
+    const pt = proj.series[idx];
+    if(!pt) return;
+    const xPxVb = proj.pad + (idx / (proj.series.length - 1)) * (proj.W - proj.pad * 2);
+    const yPxVb = proj.pad + (1 - (pt.v - proj.mnE) / proj.rngE) * (proj.H - proj.pad * 2);
+    const crosshair = document.getElementById('spark-crosshair');
+    const line = document.getElementById('spark-crosshair-line');
+    const dot = document.getElementById('spark-crosshair-dot');
+    if(crosshair){
+      crosshair.style.display = '';
+      line.setAttribute('x1', String(xPxVb));
+      line.setAttribute('x2', String(xPxVb));
+      dot.setAttribute('cx', String(xPxVb));
+      dot.setAttribute('cy', String(yPxVb));
+    }
+    // Tooltip in DOM coords (centered above the crosshair)
+    const tipPx = (xPxVb / proj.W) * rect.width;
+    const sparkWrap = svg.parentElement;
+    const wrapRect = sparkWrap.getBoundingClientRect();
+    const tipW = 150; // approx tip width; CSS uses nowrap so true width varies
+    let leftPx = (rect.left + tipPx) - wrapRect.left - tipW / 2;
+    // Keep tip inside wrap bounds
+    if(leftPx < 0) leftPx = 0;
+    if(leftPx + tipW > wrapRect.width) leftPx = wrapRect.width - tipW;
+    tip.style.left = leftPx + 'px';
+    tip.style.display = 'block';
+    // Compare to baseline for color: up if pt.v >= baseVal, else down
+    const isUp = pt.v >= (proj.baseVal || pt.v);
+    tip.classList.toggle('down', !isUp);
+    tipV.textContent = fmtTipValue(pt.v);
+    const range = (state.activeRange && state.activeRange !== 'live') ? state.activeRange : 'live';
+    tipD.textContent = fmtTipDate(pt.t, range);
+    // Robinhood-style: hero number tracks scrub (and add a small badge so users know it's a scrub value)
+    const heroEl = document.getElementById('hero');
+    const heroLabelEl = document.querySelector('.hero-label');
+    if(heroEl){
+      if(!state.scrubSavedHero) state.scrubSavedHero = heroEl.textContent;
+      if(!state.scrubSavedLabel && heroLabelEl) state.scrubSavedLabel = heroLabelEl.textContent;
+      heroEl.textContent = fmtTipValue(pt.v);
+      heroEl.style.color = isUp ? '' : 'var(--red)';
+      if(heroLabelEl) heroLabelEl.textContent = 'ELON MUSK · ' + fmtTipDate(pt.t, range).toUpperCase();
+    }
+  }
+
+  function clear(){
+    const crosshair = document.getElementById('spark-crosshair');
+    if(crosshair) crosshair.style.display = 'none';
+    tip.style.display = 'none';
+    active = false;
+    state.scrubbing = false;
+    // Restore hero number
+    const heroEl = document.getElementById('hero');
+    const heroLabelEl = document.querySelector('.hero-label');
+    if(heroEl){
+      heroEl.textContent = state.scrubSavedHero || (state.lastLiveWorth != null ? fmtMoneyPrecise(state.lastLiveWorth) : heroEl.textContent);
+      heroEl.style.color = '';
+      state.scrubSavedHero = null;
+    }
+    if(heroLabelEl && state.scrubSavedLabel){
+      heroLabelEl.textContent = state.scrubSavedLabel;
+      state.scrubSavedLabel = null;
+    }
+  }
+
+  svg.addEventListener('pointerenter', e => { active = true; update(e.clientX); });
+  svg.addEventListener('pointermove',  e => { if(active || e.pointerType !== 'touch') update(e.clientX); });
+  svg.addEventListener('pointerdown',  e => { svg.setPointerCapture(e.pointerId); active = true; update(e.clientX); });
+  svg.addEventListener('pointerup',    e => { svg.releasePointerCapture(e.pointerId); /* keep tooltip on for desktop, clear on touch */ if(e.pointerType === 'touch') clear(); });
+  svg.addEventListener('pointerleave', () => clear());
+  svg.addEventListener('pointercancel', () => clear());
+})();
 
 function paintHoldings(d){
   const C = d.constants;
@@ -1107,6 +1236,14 @@ function paintChips(d){
 }
 
 function paintHero(n, prev, opts){
+  // While the user is actively scrubbing the chart, stash the latest live value
+  // but don't repaint the hero — the scrubber owns the hero text until pointer leaves.
+  state.lastLiveWorth = n;
+  if(state.scrubbing){
+    // Update the saved value the scrubber will restore to when the user releases.
+    state.scrubSavedHero = fmtMoneyPrecise(n);
+    return;
+  }
   const hero = document.getElementById('hero');
   hero.textContent = fmtMoneyPrecise(n);
   // Flash + chirp only on real fetched ticks. Jitter ticks would otherwise

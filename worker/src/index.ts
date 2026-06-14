@@ -326,8 +326,15 @@ export default {
           { headers: corsHeaders({ "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}` }) });
       }
       if (url.pathname === "/api/history") {
-        // GET /api/history?range=1d|5d|1mo|3mo|max
+        // GET /api/history?range=1d|5d|1mo|3mo|6mo|1y|max
         // Returns daily TSLA + SPCX closes and a derived net-worth time series.
+        // Historical accuracy notes (especially for max):
+        //   - SPCX IPO’d 2026-06-12 — zero SPCX paper wealth before that timestamp.
+        //   - 2025 award vests over time — we model it as zero before its first vest gate.
+        //   - 2018 options have a $23.34 effective strike and vested by 2022; treat as in-the-money only after 2022.
+        //   - Private holdings + margin loans are modeled at constant current value (rough; not yet historical).
+        // For “max” we deliberately switch interval to monthly to keep series small
+        // and to dampen the visual effect of SPCX joining as a step-function.
         const range = (url.searchParams.get("range") || "1mo").toLowerCase();
         const allowed: Record<string, { range: string; interval: string }> = {
           "1d":  { range: "1d",  interval: "5m" },
@@ -336,29 +343,58 @@ export default {
           "3mo": { range: "3mo", interval: "1d" },
           "6mo": { range: "6mo", interval: "1d" },
           "1y":  { range: "1y",  interval: "1d" },
-          "max": { range: "max", interval: "1wk" },
+          "max": { range: "max", interval: "1mo" },
         };
         const sel = allowed[range] || allowed["1mo"];
         const hist = await loadHistory(SYMBOLS, sel.range, sel.interval);
-        // Compute net-worth series from each timestamp's TSLA + SPCX close.
-        // SPCX is newly listed (IPO 2026-06-12) so before that there is no SPCX data.
-        // For earlier dates, hold SPCX flat at its earliest known close, OR fall back to the IPO price ($135).
         const tArr = hist.TSLA || [];
         const sArr = hist.SPCX || [];
-        const sFirstClose = sArr.length ? sArr[0].c : 135; // SPCX IPO price
         const sByTs = new Map(sArr.map(p => [p.t, p.c]));
+        const sFirstTs = sArr[0]?.t ?? Number.POSITIVE_INFINITY;
+        // Constants for piecewise historical modeling
+        const TSLA_2018_OPTIONS_VESTED_TS = Date.UTC(2022, 7, 25);   // ~Aug 25, 2022 final 2018 tranche vested
+        const TSLA_2025_AWARD_FIRST_VEST_TS = Date.UTC(2026, 0, 1);  // 2025 award vesting starts 2026 (placeholder)
+        const SPCX_IPO_TS = Date.UTC(2026, 5, 12);                   // 2026-06-12 SPCX IPO
+        // For ALL/longer ranges, dampen the "constant" private + margin values to avoid pretending
+        // those values existed in 2012. We linearly ramp them in over the last 5y.
+        const NOW = Date.now();
+        const FIVE_Y_MS = 5 * 365 * 86400000;
+        function privAt(t: number): number {
+          if (range === "1d" || range === "5d" || range === "1mo") {
+            // Recent: just use current model
+            return CONSTANTS.PRIVATE.boring_company_est + CONSTANTS.PRIVATE.neuralink_est + CONSTANTS.PRIVATE.cash_residual_est;
+          }
+          // Linear ramp from 0 (5y ago) to current
+          const frac = Math.max(0, Math.min(1, 1 - (NOW - t) / FIVE_Y_MS));
+          return frac * (CONSTANTS.PRIVATE.boring_company_est + CONSTANTS.PRIVATE.neuralink_est + CONSTANTS.PRIVATE.cash_residual_est);
+        }
+        function liabAt(t: number): number {
+          if (range === "1d" || range === "5d" || range === "1mo") {
+            return CONSTANTS.LIABILITIES.margin_loans_est;
+          }
+          const frac = Math.max(0, Math.min(1, 1 - (NOW - t) / FIVE_Y_MS));
+          return frac * CONSTANTS.LIABILITIES.margin_loans_est;
+        }
         const series: { t: number; v: number; tsla: number; spcx: number }[] = [];
         for (const tp of tArr) {
           if (tp == null) continue;
-          // SPCX value for this timestamp: exact match if available, else earliest known close, else IPO price.
-          const sClose = sByTs.get(tp.t) ?? (tp.t >= (sArr[0]?.t ?? Infinity) ? sArr[sArr.length - 1].c : sFirstClose);
-          const vested = CONSTANTS.TSLA.award_2025_tranches_vested;
-          const t = CONSTANTS.TSLA.trust_shares * tp.c
-            + CONSTANTS.TSLA.options_2018_shares * Math.max(0, tp.c - CONSTANTS.TSLA.options_2018_strike)
-            + CONSTANTS.TSLA.award_2025_shares_per_tranche * vested * Math.max(0, tp.c - CONSTANTS.TSLA.award_2025_offset);
+          // SPCX: $0 before IPO, market price after
+          let sClose = 0;
+          if (tp.t >= SPCX_IPO_TS) {
+            sClose = sByTs.get(tp.t) ?? (tp.t >= sFirstTs ? (sArr[sArr.length - 1]?.c ?? 135) : 135);
+          }
+          // 2018 options: $0 before final vest date
+          const options2018Val = tp.t >= TSLA_2018_OPTIONS_VESTED_TS
+            ? CONSTANTS.TSLA.options_2018_shares * Math.max(0, tp.c - CONSTANTS.TSLA.options_2018_strike)
+            : 0;
+          // 2025 award: $0 before first vest
+          const award2025Val = tp.t >= TSLA_2025_AWARD_FIRST_VEST_TS
+            ? CONSTANTS.TSLA.award_2025_shares_per_tranche * CONSTANTS.TSLA.award_2025_tranches_vested * Math.max(0, tp.c - CONSTANTS.TSLA.award_2025_offset)
+            : 0;
+          const t = CONSTANTS.TSLA.trust_shares * tp.c + options2018Val + award2025Val;
           const s = CONSTANTS.SPCX.musk_shares * sClose;
-          const priv = CONSTANTS.PRIVATE.boring_company_est + CONSTANTS.PRIVATE.neuralink_est + CONSTANTS.PRIVATE.cash_residual_est;
-          const liab = CONSTANTS.LIABILITIES.margin_loans_est;
+          const priv = privAt(tp.t);
+          const liab = liabAt(tp.t);
           series.push({ t: tp.t, v: t + s + priv - liab, tsla: tp.c, spcx: sClose });
         }
         return new Response(JSON.stringify({ range, series }),
