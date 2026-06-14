@@ -239,6 +239,7 @@ body.math-route #math-page{display:block}
     <span class="link-pill" id="clock-display"></span>
     <div class="nav-right">
       <a class="link-pill" href="/math" onclick="openMath();return false">/math</a>
+      <a class="link-pill" href="/trillion" onclick="openTrillion();return false">/trillion 🎮</a>
       <button class="btn muted" id="sound-btn" onclick="toggleSound()">🔇 SOUND OFF</button>
       <button class="btn primary" id="share-btn" onclick="share()">SHARE NUMBER</button>
     </div>
@@ -1200,14 +1201,25 @@ function paintAth(currentWorth){
   const titleEl = document.getElementById('ath-title');
   const statusEl = document.getElementById('ath-status');
   const whenEl = document.getElementById('ath-when');
+  // Format gap from prev close as a small extra cue when at peak.
+  // Use the same baseline as the hero delta (prev close, stored in state by paintDelta)
+  // so the two numbers agree.
+  const openGap = state.prevCloseWorth ? (currentWorth - state.prevCloseWorth) : 0;
+  const ipo = new Date('2026-06-12T00:00:00-04:00');
+  const daysSinceIpo = Math.floor((Date.now() - ipo.getTime()) / 86400000);
+  const gapSuffix = daysSinceIpo <= 7 ? 'SINCE IPO' : 'TODAY';
+  let openGapStr = '';
+  if(Math.abs(openGap) >= 1e9) openGapStr = (openGap >= 0 ? '+$' : '-$') + (Math.abs(openGap)/1e9).toFixed(1) + 'B ' + gapSuffix;
+  else if(Math.abs(openGap) >= 1e6) openGapStr = (openGap >= 0 ? '+$' : '-$') + (Math.abs(openGap)/1e6).toFixed(0) + 'M ' + gapSuffix;
+  else openGapStr = 'FLAT ' + gapSuffix;
   if(isFresh){
     titleEl.textContent = 'NEW ALL-TIME HIGH';
-    statusEl.textContent = 'TODAY';
-    whenEl.textContent = 'AT PEAK';
+    statusEl.textContent = gapSuffix;
+    whenEl.textContent = openGapStr;
   } else if(atPeak){
     titleEl.textContent = 'ALL-TIME HIGH';
     statusEl.textContent = 'AT PEAK';
-    whenEl.textContent = 'AT PEAK';
+    whenEl.textContent = openGapStr;
   } else {
     titleEl.textContent = 'ALL-TIME HIGH';
     statusEl.textContent = (pct * 100).toFixed(2) + '%';
@@ -1234,11 +1246,18 @@ function paintDelta(d){
     + C.SPCX.musk_shares * S
     + (C.PRIVATE.boring_company_est + C.PRIVATE.neuralink_est + C.PRIVATE.cash_residual_est)
     - C.LIABILITIES.margin_loans_est;
+  // Store prev-close baseline so paintAth can show a matching delta.
+  state.prevCloseWorth = prevWorth;
   const diff = d.net_worth - prevWorth;
   const pct = diff / prevWorth * 100;
   const el = document.getElementById('delta');
   const arrow = diff>=0 ? '▲' : '▼';
-  el.textContent = `${arrow} ${fmtMoney(Math.abs(diff))} (${fmtPct(pct)}) Today`;
+  // SPCX IPO'd 2026-06-12. For the first ~7 days, label delta SINCE SPCX IPO instead of TODAY,
+  // because SPCX's "previousClose" is its IPO price ($135) which makes "today" misleading.
+  const ipo = new Date('2026-06-12T00:00:00-04:00');
+  const daysSinceIpo = Math.floor((Date.now() - ipo.getTime()) / 86400000);
+  const label = daysSinceIpo <= 7 ? 'Since SPCX IPO' : 'Today';
+  el.textContent = `${arrow} ${fmtMoney(Math.abs(diff))} (${fmtPct(pct)}) ${label}`;
   el.className = 'delta ' + (diff>=0?'up':'down');
 }
 
@@ -1277,6 +1296,15 @@ async function tick(){
     }
 
     maybeBumpAth(n);
+    // Also consider the session theoretical high (TSLA hi + SPCX hi) as ATH.
+    // If both legs hit their daily highs today, the underlying portfolio was
+    // worth that combined max at some point in the session — so it counts.
+    try {
+      const tHi = d.quotes.TSLA.hi || d.quotes.TSLA.p;
+      const sHi = d.quotes.SPCX.hi || d.quotes.SPCX.p;
+      const sessionHigh = computeWorth(d, tHi, sHi);
+      maybeBumpAth(sessionHigh);
+    } catch {}
 
     paintHero(n, prev, { real: true });
     paintDelta(d);
