@@ -147,17 +147,18 @@ body.trillion-route #trillion-page{display:block}
 .tr-stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:#6A6A72}
 .tr-stat .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:3px}
 .tr-stat .v.cur{color:var(--green)}
-.tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:grab;outline:none;user-select:none;aspect-ratio:1;overflow:hidden;--drag-x:0px;--drag-y:0px}
+.tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:grab;outline:none;user-select:none;aspect-ratio:1;overflow:hidden}
 .tr-board.dragging{cursor:grabbing}
 .tr-cell-bg{aspect-ratio:1;border-radius:8px;background:#0A0A0E}
-.tr-tile{position:absolute;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;will-change:transform;pointer-events:none;transform:translate3d(var(--x),var(--y),0) translate3d(var(--drag-x),var(--drag-y),0);transition:transform 92ms cubic-bezier(.18,.86,.25,1.02), background .12s ease, scale .12s ease;z-index:2}
-.tr-board.dragging .tr-tile{transition-duration:0ms}
-.tr-board.snapback .tr-tile{transition-duration:86ms}
-.tr-tile .lbl{line-height:1}
-@keyframes trSpawn {0%{scale:.2}80%{scale:1.08}100%{scale:1}}
-@keyframes trMerge {0%{scale:1}50%{scale:1.16}100%{scale:1}}
-.tr-tile.spawn{animation:trSpawn .16s ease-out}
-.tr-tile.merge{animation:trMerge .18s ease-out}
+.tr-tile{position:absolute;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;will-change:transform;pointer-events:auto;touch-action:none;cursor:grab;transform:translate3d(var(--x),var(--y),0) translate3d(var(--tile-drag-x,0px),var(--tile-drag-y,0px),0);transition:transform 100ms ease-in-out, background .12s ease;z-index:2}
+.tr-board.dragging .tr-tile{cursor:grabbing}
+.tr-tile.drag-source{transition-duration:0ms;z-index:6}
+.tr-board.snapback .tr-tile.drag-source{transition-duration:90ms}
+.tr-tile .lbl{line-height:1;display:block;transform-origin:center;will-change:transform}
+@keyframes trAppear {0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes trTilePop {0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.tr-tile.spawn .lbl{animation:trAppear 200ms ease 100ms backwards}
+.tr-tile.merge .lbl{animation:trTilePop 200ms ease 100ms backwards}
 .tr-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);border-radius:14px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px;box-sizing:border-box;z-index:20}
 .tr-overlay.show{display:flex}
 .tr-overlay .big{font-family:'Archivo Black',sans-serif;font-size:48px;color:var(--green)}
@@ -170,8 +171,8 @@ body.trillion-route #trillion-page{display:block}
 .tr-overlay .btn.sec{background:transparent;color:var(--fg);border:1px solid #2A2A30}
 .tr-overlay .btn.retry{background:#fff;color:#000;font-weight:700}
 .tr-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:14px}
-.tr-confetti{position:absolute;width:6px;height:12px;background:var(--green);opacity:.92;animation:trPop 900ms ease-out forwards}
-@keyframes trPop{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1) rotate(540deg);opacity:0}}
+.tr-confetti{position:absolute;width:6px;height:12px;background:var(--green);opacity:.92;animation:trConfettiBurst 900ms ease-out forwards}
+@keyframes trConfettiBurst{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1) rotate(540deg);opacity:0}}
 .tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
 .tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
 .tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
@@ -683,7 +684,7 @@ const Trillion = (() => {
   // Level: 0 (empty) | 1 ($1M) | 2 ($2M) | ... | 21 ($1.05T tile)
   const TARGET_SCORE_M = 1_000_000; // $1T total merged value
   const WIN_TILE_LEVEL = 21;        // 2^20 * $1M = $1.048576T
-  const MOVE_ANIM_MS = 96;
+  const MOVE_ANIM_MS = 112;
   const BEST_KEY = 'ew_trillion_best_m_v2';
   const RUNS_KEY = 'ew_trillion_runs_v2';
   const NAME_KEY = 'ew_trillion_name_v2';
@@ -857,8 +858,7 @@ const Trillion = (() => {
     const board = document.getElementById('tr-board');
     if(!board) return;
     const m = boardMetrics();
-    const dx = drag?.dx || 0;
-    const dy = drag?.dy || 0;
+    const source = drag?.source || null;
     board.classList.remove('dragging','snapback');
     board.classList.add('animating');
     for(const mv of plan.moves){
@@ -866,7 +866,13 @@ const Trillion = (() => {
       if(!tile) continue;
       const from = tilePos(mv.from.r, mv.from.c, m);
       const to = tilePos(mv.to.r, mv.to.c, m);
+      const isDragSource = source && source.r === mv.from.r && source.c === mv.from.c;
+      const dx = isDragSource ? (drag?.dx || 0) : 0;
+      const dy = isDragSource ? (drag?.dy || 0) : 0;
       tile.style.transition = 'none';
+      tile.classList.remove('drag-source');
+      tile.style.setProperty('--tile-drag-x', '0px');
+      tile.style.setProperty('--tile-drag-y', '0px');
       tile.style.setProperty('--x', `${from.x + dx}px`);
       tile.style.setProperty('--y', `${from.y + dy}px`);
       tile.style.zIndex = mv.merge ? '4' : '3';
@@ -877,18 +883,22 @@ const Trillion = (() => {
         tile.style.setProperty('--y', `${to.y}px`);
       });
     }
-    board.style.setProperty('--drag-x', '0px');
-    board.style.setProperty('--drag-y', '0px');
   }
 
-  function snapDragBack(){
+  function snapDragBack(tile){
     const board = document.getElementById('tr-board');
     if(!board) return;
+    const dragTile = tile && tile.isConnected ? tile : board.querySelector('.tr-tile.drag-source');
     board.classList.remove('dragging');
     board.classList.add('snapback');
-    board.style.setProperty('--drag-x', '0px');
-    board.style.setProperty('--drag-y', '0px');
-    setTimeout(() => board.classList.remove('snapback'), 100);
+    if(dragTile){
+      dragTile.style.setProperty('--tile-drag-x', '0px');
+      dragTile.style.setProperty('--tile-drag-y', '0px');
+    }
+    setTimeout(() => {
+      board.classList.remove('snapback');
+      if(dragTile) dragTile.classList.remove('drag-source');
+    }, 105);
   }
 
   function finishMove(plan){
@@ -1125,24 +1135,47 @@ const Trillion = (() => {
       e.preventDefault();
       move(dir);
     });
-    // Pointer drag: follows mouse/finger immediately, then glides to the 2048 move target.
+    // Pointer drag: only the touched tile previews the drag, then the whole board resolves like 2048.
     let drag = null;
-    const dragVector = (dx, dy) => {
+    const sourceFromTile = tile => {
+      if(!tile) return null;
+      const r = Number(tile.dataset.r), c = Number(tile.dataset.c);
+      if(!Number.isInteger(r) || !Number.isInteger(c) || !S.grid[r]?.[c]) return null;
+      return { r, c };
+    };
+    const moveForSource = (source, dir) => {
+      if(!source || dir < 0) return null;
+      return planMove(dir).moves.find(mv => mv.from.r === source.r && mv.from.c === source.c) || null;
+    };
+    const dragVector = (dx, dy, source) => {
       const ax = Math.abs(dx), ay = Math.abs(dy);
       const horizontal = ax >= ay;
       const raw = horizontal ? dx : dy;
+      const sign = raw >= 0 ? 1 : -1;
+      const dir = horizontal ? (sign > 0 ? 2 : 0) : (sign > 0 ? 3 : 1);
       const m = boardMetrics();
-      const max = m.step * 0.92;
-      const eased = Math.sign(raw) * Math.min(max, Math.pow(Math.min(Math.abs(raw), max) / max, .82) * max);
-      return horizontal ? { dx:eased, dy:0, dir:raw >= 0 ? 2 : 0, dist:ax } : { dx:0, dy:eased, dir:raw >= 0 ? 3 : 1, dist:ay };
+      const sourceMove = moveForSource(source, dir);
+      let max = m.step * 0.92;
+      if(sourceMove){
+        const travelCells = horizontal ? Math.abs(sourceMove.to.c - sourceMove.from.c) : Math.abs(sourceMove.to.r - sourceMove.from.r);
+        max = travelCells > 0 ? travelCells * m.step : Math.min(18, m.step * 0.22);
+      }
+      const limited = Math.min(Math.abs(raw), max);
+      const eased = sourceMove && max > m.step ? limited : Math.pow(limited / Math.max(1, max), .82) * max;
+      const v = sign * eased;
+      return horizontal ? { dx:v, dy:0, dir, dist:ax, source } : { dx:0, dy:v, dir, dist:ay, source };
     };
     const setDrag = v => {
-      board.style.setProperty('--drag-x', `${v.dx}px`);
-      board.style.setProperty('--drag-y', `${v.dy}px`);
+      if(!drag?.tile) return;
+      drag.tile.style.setProperty('--tile-drag-x', `${v.dx}px`);
+      drag.tile.style.setProperty('--tile-drag-y', `${v.dy}px`);
     };
     board.addEventListener('pointerdown', e => {
       if(S.animating || (S.won && !S.keepGoing)) return;
-      drag = { id:e.pointerId, sx:e.clientX, sy:e.clientY, v:{dx:0,dy:0,dir:-1,dist:0} };
+      const tile = e.target.closest?.('.tr-tile') || null;
+      const source = sourceFromTile(tile);
+      if(tile && source) tile.classList.add('drag-source');
+      drag = { id:e.pointerId, sx:e.clientX, sy:e.clientY, tile: source ? tile : null, source, v:{dx:0,dy:0,dir:-1,dist:0,source} };
       board.setPointerCapture(e.pointerId);
       board.focus();
       board.classList.add('dragging');
@@ -1151,20 +1184,21 @@ const Trillion = (() => {
     });
     board.addEventListener('pointermove', e => {
       if(!drag || drag.id !== e.pointerId || S.animating) return;
-      drag.v = dragVector(e.clientX - drag.sx, e.clientY - drag.sy);
+      drag.v = dragVector(e.clientX - drag.sx, e.clientY - drag.sy, drag.source);
       setDrag(drag.v);
       e.preventDefault();
     });
     const finishDrag = (e, cancel=false) => {
       if(!drag || drag.id !== e.pointerId) return;
       const v = drag.v;
+      const tile = drag.tile;
       drag = null;
       try{ board.releasePointerCapture(e.pointerId); }catch{}
       if(cancel || v.dist < 24 || v.dir < 0){
-        snapDragBack();
+        snapDragBack(tile);
         return;
       }
-      if(!move(v.dir, v)) snapDragBack();
+      if(!move(v.dir, v)) snapDragBack(tile);
       e.preventDefault();
     };
     board.addEventListener('pointerup', e => finishDrag(e));

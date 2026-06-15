@@ -56,6 +56,7 @@ for id in formula math-components math-page trillion-page tr-board hero live-dot
 done
 check "chart defaults to 1D with no NOW tab" bash -c "grep -q 'class=\"active\" data-range=\"1d\"' www/index.html && ! grep -q 'data-range=\"live\"' www/index.html && ! grep -q '>NOW</span>' www/index.html"
 check "trillion game uses smooth tile layer" bash -c "grep -q '\\.tr-tile' www/index.html && grep -q 'pointerdown' www/index.html && grep -q 'animating' www/index.html"
+check "trillion game has native-style slide/pop hooks" bash -c "grep -q 'trTilePop' www/index.html && grep -q 'trAppear' www/index.html && grep -q 'drag-source' www/index.html && grep -q -- '--tile-drag-x' www/index.html"
 
 # 6. Worker TS compiles
 if [ ! -x worker/node_modules/.bin/tsc ]; then
