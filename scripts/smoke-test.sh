@@ -6,6 +6,8 @@ set -euo pipefail
 TARGET="${1:-}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+export npm_config_cache="${npm_config_cache:-/tmp/elonsworth-npm-cache}"
+mkdir -p "$npm_config_cache"
 
 red()   { printf "\033[31m%s\033[0m\n" "$*"; }
 green() { printf "\033[32m%s\033[0m\n" "$*"; }
@@ -54,6 +56,9 @@ for id in formula math-components math-page trillion-page tr-board hero live-dot
 done
 
 # 6. Worker TS compiles
+if [ ! -x worker/node_modules/.bin/tsc ]; then
+  ( cd worker && npm ci --silent )
+fi
 check "worker tsc" bash -c "cd worker && npx tsc --noEmit"
 
 ylw ""
@@ -72,6 +77,7 @@ check "/api/formula returns constants" bash -c "curl -fs --max-time 5 $RESOLVE_O
 if [ -n "$TARGET" ]; then
   ylw ""
   ylw "=== Live site checks at $TARGET ==="
+  check "/api/trillion/leaderboard returns runs array" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/trillion/leaderboard | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d[\"runs\"], list)'"
   check "$TARGET/ returns 200" bash -c "[ \"\$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/)\" = 200 ]"
   check "$TARGET/math reachable (200 after redirect)" bash -c "[ \"\$(curl -sL -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/math)\" = 200 ]"
   check "$TARGET/trillion reachable (200 after redirect)" bash -c "[ \"\$(curl -sL -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/trillion)\" = 200 ]"

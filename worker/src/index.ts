@@ -8,6 +8,8 @@
  *      → live full computation server-side
  *   GET /api/formula
  *      → the canonical formula + every constant we use (transparency moat)
+ *   GET/POST /api/trillion/leaderboard
+ *      → tiny client-verified leaderboard for the /trillion easter egg
  *   GET /healthz
  *
  * Resilience model:
@@ -250,6 +252,65 @@ function cacheTTL(quotes?: Record<string, QuoteSnapshot>): number {
   return (min >= 570 && min <= 960) ? 1 : 30;
 }
 
+type TrillionRun = {
+  id?: string;
+  name: string;
+  scoreM: number;
+  bestTileM: number;
+  elapsedMs: number;
+  moves: number;
+  ts: number;
+  country?: string;
+};
+
+const TRILLION_LEADERBOARD_KEY = "trillion:leaderboard:v2";
+const TRILLION_TARGET_SCORE_M = 1_000_000;
+
+function json(data: unknown, init: ResponseInit = {}): Response {
+  return new Response(JSON.stringify(data, null, 2), {
+    ...init,
+    headers: corsHeaders({
+      "Content-Type": "application/json",
+      ...(init.headers ? Object.fromEntries(new Headers(init.headers).entries()) : {}),
+    }),
+  });
+}
+
+function cleanRunName(name: unknown): string {
+  const cleaned = String(name || "ANON").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+  return cleaned || "ANON";
+}
+
+function validTrillionRun(run: any): run is TrillionRun {
+  return run
+    && Number.isFinite(run.scoreM)
+    && Number.isFinite(run.bestTileM)
+    && Number.isFinite(run.elapsedMs)
+    && Number.isFinite(run.moves)
+    && run.scoreM >= TRILLION_TARGET_SCORE_M
+    && run.scoreM <= 100_000_000
+    && run.bestTileM >= 1
+    && run.bestTileM <= 2_097_152
+    && run.elapsedMs >= 5_000
+    && run.elapsedMs <= 1000 * 60 * 60 * 12
+    && run.moves >= 25
+    && run.moves <= 2_000_000;
+}
+
+function sortTrillionRuns(runs: TrillionRun[]): TrillionRun[] {
+  return runs
+    .filter(validTrillionRun)
+    .sort((a, b) => (a.elapsedMs - b.elapsedMs) || (a.moves - b.moves) || (b.scoreM - a.scoreM))
+    .slice(0, 50);
+}
+
+async function readTrillionLeaderboard(env: Env): Promise<TrillionRun[]> {
+  const kv = (env as any).QUOTES_KV;
+  if (!kv) return [];
+  const current = JSON.parse((await kv.get(TRILLION_LEADERBOARD_KEY)) || "[]");
+  return sortTrillionRuns(Array.isArray(current) ? current : []);
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
@@ -292,6 +353,38 @@ export default {
         // Never fail loudly — sharing must still work.
         return new Response(JSON.stringify({ ok: false, err: e?.message }), { headers: corsHeaders() });
       }
+    }
+
+    if (url.pathname === "/api/trillion/leaderboard") {
+      if (req.method === "GET") {
+        return json({ runs: await readTrillionLeaderboard(env) }, {
+          headers: { "Cache-Control": "public, max-age=10, s-maxage=10" },
+        });
+      }
+      if (req.method === "POST") {
+        try {
+          const body = await req.json() as any;
+          const run: TrillionRun = {
+            id: crypto.randomUUID(),
+            name: cleanRunName(body.name),
+            scoreM: Math.floor(Number(body.scoreM)),
+            bestTileM: Math.floor(Number(body.bestTileM)),
+            elapsedMs: Math.floor(Number(body.elapsedMs)),
+            moves: Math.floor(Number(body.moves)),
+            ts: Date.now(),
+            country: (req.headers.get("cf-ipcountry") || "").slice(0, 2),
+          };
+          if (!validTrillionRun(run)) return json({ ok: false, error: "invalid_run" }, { status: 400 });
+          const kv = (env as any).QUOTES_KV;
+          if (!kv) return json({ ok: false, error: "no_kv" }, { status: 500 });
+          const runs = sortTrillionRuns([run, ...(await readTrillionLeaderboard(env))]);
+          await kv.put(TRILLION_LEADERBOARD_KEY, JSON.stringify(runs), { expirationTtl: 60 * 60 * 24 * 365 });
+          return json({ ok: true, runs });
+        } catch (e: any) {
+          return json({ ok: false, error: e?.message || "bad_request" }, { status: 400 });
+        }
+      }
+      return json({ ok: false, error: "method_not_allowed" }, { status: 405 });
     }
 
     if (url.pathname === "/api/events/summary") {

@@ -6,6 +6,8 @@ cd "$ROOT"
 
 source /Users/trinity/clawd/.secrets/cloudflare-privileged.env
 export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID
+export npm_config_cache="${npm_config_cache:-/tmp/elonsworth-npm-cache}"
+mkdir -p "$npm_config_cache"
 
 # Sync subdir copies
 cp www/index.html www/math/index.html

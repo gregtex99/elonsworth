@@ -159,15 +159,28 @@ body.trillion-route #trillion-page{display:block}
 .tr-overlay .big{font-family:'Archivo Black',sans-serif;font-size:48px;color:var(--green)}
 .tr-overlay .him{font-family:'Archivo Black',sans-serif;font-size:18px}
 .tr-overlay .vs{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--fg-dim)}
+.tr-overlay .why{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#7E7E86;line-height:1.55;max-width:330px}
 .tr-overlay .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center}
 .tr-overlay .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:11px 16px;border-radius:10px;cursor:pointer;border:0}
 .tr-overlay .btn.pri{background:var(--green);color:var(--green-d);font-weight:700}
 .tr-overlay .btn.sec{background:transparent;color:var(--fg);border:1px solid #2A2A30}
 .tr-overlay .btn.retry{background:#fff;color:#000;font-weight:700}
+.tr-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:14px}
+.tr-confetti{position:absolute;width:6px;height:12px;background:var(--green);opacity:.92;animation:trPop 900ms ease-out forwards}
+@keyframes trPop{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1) rotate(540deg);opacity:0}}
 .tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
 .tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
 .tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
 .tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
+.tr-leader{margin-top:16px;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:12px;padding:12px}
+.tr-leader-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:#7A7A82}
+.tr-leader-head button{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid #2A2A30;background:transparent;color:var(--fg-dim);border-radius:8px;padding:7px 9px;cursor:pointer}
+.tr-leader-list{margin-top:9px;display:grid;gap:6px}
+.tr-leader-row{display:grid;grid-template-columns:24px 1fr auto auto;gap:10px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--fg-dim)}
+.tr-leader-row b{color:var(--fg);font-weight:500}
+.tr-leader-row .time{color:var(--green)}
+.tr-leader-empty{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5A5A62;margin-top:9px}
+.tr-leader-note{font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4F4F56;line-height:1.55;margin-top:9px}
 
 /* /math FULL PAGE (no modal). Shown when route='math'. */
 #math-page{display:none;padding:0;min-height:100vh}
@@ -338,7 +351,7 @@ body.math-route #math-page{display:block}
       <span>EASTER EGG</span>
     </div>
     <div class="tr-h1">MAKE A TRILLION</div>
-    <div class="tr-sub">MERGE HIS MONEY. $1B + $1B UNTIL YOU HIT $1T.</div>
+    <div class="tr-sub">MERGE HIS MONEY. $1M + $1M UNTIL THE RUN CROSSES $1T.</div>
     <div class="tr-stats">
       <div class="tr-stat"><div class="lbl">MERGED</div><div class="v cur" id="tr-score">$0</div></div>
       <div class="tr-stat"><div class="lbl">BEST</div><div class="v" id="tr-best">$0</div></div>
@@ -346,9 +359,11 @@ body.math-route #math-page{display:block}
     </div>
     <div class="tr-board" id="tr-board" tabindex="0">
       <div class="tr-overlay" id="tr-win">
+        <div class="tr-burst" id="tr-burst"></div>
         <div class="big">$1T</div>
-        <div class="him">YOU'RE HIM NOW.</div>
-        <div class="vs">YOU: <span id="tr-win-time">0:00</span> · HIM: 54 YEARS</div>
+        <div class="him">SPCX IPO UNLOCKED.</div>
+        <div class="vs">YOU: <span id="tr-win-time">0:00</span> · <span id="tr-win-moves">0</span> MOVES · HIM: 54 YEARS</div>
+        <div class="why">A literal $1T tile from $1M seeds is 20 doublings. This run celebrates the moment your total merged value crosses $1T.</div>
         <div class="row">
           <button class="btn pri" onclick="shareTrillion()" id="tr-share-btn">SHARE YOUR RUN</button>
           <button class="btn sec" onclick="keepMerging()">KEEP MERGING</button>
@@ -363,7 +378,17 @@ body.math-route #math-page{display:block}
     <div class="tr-help">SWIPE · OR CLICK BOARD + ARROW KEYS / WASD</div>
     <div class="tr-foot">
       <button class="new" onclick="resetTrillion()">NEW GAME</button>
-      <div class="taunt">HE TOOK 54 YEARS.<br>NO PRESSURE.</div>
+      <div class="taunt">1M MODE: 20 DOUBLINGS TO A $1T TILE.<br>NO PRESSURE.</div>
+    </div>
+    <div class="tr-leader">
+      <div class="tr-leader-head">
+        <span>LEADERBOARD</span>
+        <button onclick="setTrillionName()">SET NAME</button>
+      </div>
+      <div class="tr-leader-list" id="tr-leader-list">
+        <div class="tr-leader-empty">NO $1T RUNS YET.</div>
+      </div>
+      <div class="tr-leader-note">FASTEST $1T MERGED RUNS. GLOBAL SCORES ARE CLIENT-VERIFIED.</div>
     </div>
   </div>
 </div>
@@ -646,54 +671,60 @@ function routeFromPath(){
 }
 window.addEventListener('popstate', routeFromPath);
 
-/* ========== /trillion: 2048-clone, $1B → $1T ========== */
+/* ========== /trillion: 2048-clone, $1M -> $1T merged ========== */
 const Trillion = (() => {
-  // Tile values are powers of 2 expressed in billions of $.
-  // Level: 0 (empty) | 1 ($1B) | 2 ($2B) | ... | 10 ($1T)
-  const WIN_LEVEL = 10; // 2^10 * 1B = 1024B = ~$1T
-  const COLORS = {
-    1:  ['#0F1F16', '#5BE89B'],   // 1B
-    2:  ['#0F261C', '#5BE89B'],   // 2B
-    3:  ['#103224', '#5BE89B'],   // 4B
-    4:  ['#104230', '#5BE89B'],   // 8B
-    5:  ['#0E5340', '#FFFFFF'],   // 16B
-    6:  ['#0E6850', '#FFFFFF'],   // 32B
-    7:  ['#0D8068', '#FFFFFF'],   // 64B
-    8:  ['#0AA582', '#FFFFFF'],   // 128B
-    9:  ['#06C49A', '#001A10'],   // 256B
-    10: ['#00FF85', '#00130A'],   // 1T 🔥
-  };
+  // Tile values are powers of 2 expressed in millions of dollars.
+  // Level: 0 (empty) | 1 ($1M) | 2 ($2M) | ... | 21 ($1.05T tile)
+  const TARGET_SCORE_M = 1_000_000; // $1T total merged value
+  const WIN_TILE_LEVEL = 21;        // 2^20 * $1M = $1.048576T
+  const BEST_KEY = 'ew_trillion_best_m_v2';
+  const RUNS_KEY = 'ew_trillion_runs_v2';
+  const NAME_KEY = 'ew_trillion_name_v2';
+
+  const valueForLevel = lvl => lvl ? Math.pow(2, lvl - 1) : 0;
   const labelFor = lvl => {
     if(lvl === 0) return '';
-    if(lvl === WIN_LEVEL) return '$1T';
-    const billions = Math.pow(2, lvl - 1); // lvl=1 → 1B
-    if(billions >= 1000) return '$'+(billions/1000).toFixed(billions%1000?1:0).replace(/\.0$/,'')+'T';
-    return '$'+billions+'B';
+    return fmtMoneyM(valueForLevel(lvl));
   };
   const fsFor = lvl => {
     const s = labelFor(lvl);
-    if(s.length <= 3) return 22;
-    if(s.length <= 4) return 19;
-    if(s.length <= 5) return 16;
+    if(s.length <= 4) return 22;
+    if(s.length <= 5) return 19;
+    if(s.length <= 6) return 16;
     return 13;
+  };
+  const colorFor = lvl => {
+    if(!lvl) return ['#0A0A0E', '#FFFFFF'];
+    const t = Math.min(1, (lvl - 1) / (WIN_TILE_LEVEL - 1));
+    const light = 9 + t * 45;
+    const bg = `hsl(${154 + t * 18} 76% ${light}%)`;
+    const fg = t > 0.72 ? '#00130A' : (t > 0.44 ? '#FFFFFF' : '#5BE89B');
+    return [bg, fg];
   };
 
   const S = {
     grid: Array(4).fill().map(()=>Array(4).fill(0)),
-    score: 0,           // total merged value, in $B
-    best: 0,            // in $B
+    score: 0,           // total merged value, in $M
+    best: 0,            // in $M
+    moves: 0,
     startMs: 0,
     elapsedMs: 0,
     won: false,
     keepGoing: false,
+    submittedWin: false,
+    globalRuns: [],
     started: false,
     timer: null,
     boundKey: false,
   };
 
-  function fmt$(b){
-    if(b >= 1000) return '$'+(b/1000).toFixed(b%1000?2:0)+'T';
-    return '$'+b.toFixed(0)+'B';
+  function fmtMoneyM(m){
+    if(m >= 1_000_000) return '$'+(m/1_000_000).toFixed(m % 1_000_000 ? 2 : 0).replace(/\.00$/,'')+'T';
+    if(m >= 1000){
+      const b = m / 1000;
+      return '$'+b.toFixed(b < 10 && m % 1000 ? 1 : 0).replace(/\.0$/,'')+'B';
+    }
+    return '$'+Math.round(m)+'M';
   }
   function fmtTime(ms){
     const s = Math.floor(ms/1000);
@@ -710,7 +741,7 @@ const Trillion = (() => {
     const empties = emptyCells();
     if(!empties.length) return null;
     const [r,c] = empties[Math.floor(Math.random()*empties.length)];
-    // 90% chance $1B, 10% chance $2B
+    // 90% chance $1M, 10% chance $2M
     S.grid[r][c] = Math.random() < 0.9 ? 1 : 2;
     return [r,c];
   }
@@ -726,7 +757,7 @@ const Trillion = (() => {
         out[i] = out[i] + 1; // level up
         out.splice(i+1, 1);
         merged[i] = true;
-        scoreGain += Math.pow(2, out[i]-1); // value in $B
+        scoreGain += valueForLevel(out[i]); // value in $M
       }
     }
     while(out.length < 4) out.push(0);
@@ -740,6 +771,7 @@ const Trillion = (() => {
   }
 
   function move(dir){
+    if(S.won && !S.keepGoing) return false;
     // 0=left, 1=up, 2=right, 3=down. Reduce to left via rotations.
     let g = clone(S.grid);
     const rot = (4 - dir) % 4;
@@ -761,20 +793,18 @@ const Trillion = (() => {
     if(!moved) return false;
     S.grid = g;
     S.score += scoreGain;
-    if(S.score > S.best){ S.best = S.score; localStorage.setItem('ew_trillion_best', String(S.best)); }
+    S.moves++;
+    if(S.score > S.best){ S.best = S.score; localStorage.setItem(BEST_KEY, String(S.best)); }
     spawn();
     render();
-    // Win check
-    if(!S.won && !S.keepGoing){
-      for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(S.grid[r][c] >= WIN_LEVEL){
-        S.won = true;
-        stopTimer();
-        showWin();
-        break;
-      }
+    // Win check: the stat hits $1T long before a literal $1T tile could exist.
+    if(!S.won && !S.keepGoing && S.score >= TARGET_SCORE_M){
+      S.won = true;
+      stopTimer();
+      showWin();
     }
     // Game over check
-    if(!hasMoves()){
+    if(!S.won && !hasMoves()){
       stopTimer();
       showOver();
     }
@@ -798,7 +828,7 @@ const Trillion = (() => {
     let html = '';
     for(let r=0;r<4;r++) for(let c=0;c<4;c++){
       const lvl = S.grid[r][c];
-      const [bg, fg] = lvl ? COLORS[Math.min(lvl, WIN_LEVEL)] : ['#0A0A0E', '#FFFFFF'];
+      const [bg, fg] = colorFor(lvl);
       html += `<div class="tr-cell" style="background:${bg};color:${fg};font-size:${fsFor(lvl)}px"><span class="lbl">${labelFor(lvl)}</span></div>`;
     }
     // Re-attach overlays after cells
@@ -807,8 +837,8 @@ const Trillion = (() => {
     board.innerHTML = html;
     board.appendChild(winOv);
     board.appendChild(overOv);
-    document.getElementById('tr-score').textContent = fmt$(S.score);
-    document.getElementById('tr-best').textContent = fmt$(S.best);
+    document.getElementById('tr-score').textContent = fmtMoneyM(S.score);
+    document.getElementById('tr-best').textContent = fmtMoneyM(S.best);
   }
 
   function tickTimer(){
@@ -820,11 +850,14 @@ const Trillion = (() => {
 
   function showWin(){
     document.getElementById('tr-win-time').textContent = fmtTime(S.elapsedMs);
+    document.getElementById('tr-win-moves').textContent = String(S.moves);
     document.getElementById('tr-win').classList.add('show');
+    burst();
+    submitRun();
   }
   function hideWin(){ document.getElementById('tr-win').classList.remove('show'); }
   function showOver(){
-    document.getElementById('tr-over-score').textContent = fmt$(S.score);
+    document.getElementById('tr-over-score').textContent = fmtMoneyM(S.score);
     document.getElementById('tr-over').classList.add('show');
   }
   function hideOver(){ document.getElementById('tr-over').classList.remove('show'); }
@@ -832,12 +865,119 @@ const Trillion = (() => {
   function reset(){
     stopTimer();
     S.grid = Array(4).fill().map(()=>Array(4).fill(0));
-    S.score = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false;
+    S.score = 0; S.moves = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false; S.submittedWin = false;
     hideWin(); hideOver();
     spawn(); spawn();
     render();
     document.getElementById('tr-time').textContent = '0:00';
     startTimer();
+  }
+
+  function highestTileM(){
+    let mx = 0;
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++) mx = Math.max(mx, valueForLevel(S.grid[r][c]));
+    return mx;
+  }
+
+  function cleanName(name){
+    return String(name || 'ANON').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0, 8) || 'ANON';
+  }
+  function playerName(){
+    return cleanName(localStorage.getItem(NAME_KEY) || 'ANON');
+  }
+  function localRuns(){
+    try{
+      const runs = JSON.parse(localStorage.getItem(RUNS_KEY) || '[]');
+      return Array.isArray(runs) ? runs.filter(validRun) : [];
+    }catch(e){ return []; }
+  }
+  function validRun(r){
+    return r && Number.isFinite(r.scoreM) && Number.isFinite(r.elapsedMs) && Number.isFinite(r.moves) && r.scoreM >= TARGET_SCORE_M;
+  }
+  function sortRuns(runs){
+    return runs.slice().sort((a,b)=>(a.elapsedMs-b.elapsedMs) || (a.moves-b.moves) || (b.scoreM-a.scoreM)).slice(0, 10);
+  }
+  function saveLocalRun(run){
+    const runs = sortRuns([run, ...localRuns()]);
+    localStorage.setItem(RUNS_KEY, JSON.stringify(runs));
+  }
+  function renderLeaderboard(){
+    const el = document.getElementById('tr-leader-list');
+    if(!el) return;
+    const rows = sortRuns(S.globalRuns.length ? S.globalRuns : localRuns()).slice(0,5);
+    if(!rows.length){
+      el.innerHTML = '<div class="tr-leader-empty">NO $1T RUNS YET.</div>';
+      return;
+    }
+    el.innerHTML = rows.map((r,i)=>`
+      <div class="tr-leader-row">
+        <span>#${i+1}</span>
+        <b>${cleanName(r.name)}</b>
+        <span class="time">${fmtTime(r.elapsedMs)}</span>
+        <span>${fmtMoneyM(r.scoreM)}</span>
+      </div>
+    `).join('');
+  }
+  async function loadLeaderboard(){
+    renderLeaderboard();
+    try{
+      const r = await fetch(API_URL + '/api/trillion/leaderboard', { cache:'no-store' });
+      if(!r.ok) throw new Error('leaderboard '+r.status);
+      const j = await r.json();
+      S.globalRuns = Array.isArray(j.runs) ? j.runs.filter(validRun) : [];
+      renderLeaderboard();
+    }catch(e){}
+  }
+  async function submitRun(){
+    if(S.submittedWin) return;
+    S.submittedWin = true;
+    const run = {
+      name: playerName(),
+      scoreM: Math.floor(S.score),
+      bestTileM: Math.floor(highestTileM()),
+      elapsedMs: Math.max(1, Math.floor(S.elapsedMs)),
+      moves: S.moves,
+      ts: Date.now(),
+    };
+    saveLocalRun(run);
+    renderLeaderboard();
+    try{
+      const r = await fetch(API_URL + '/api/trillion/leaderboard', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(run),
+      });
+      if(r.ok){
+        const j = await r.json();
+        S.globalRuns = Array.isArray(j.runs) ? j.runs.filter(validRun) : [];
+        renderLeaderboard();
+      }
+    }catch(e){}
+  }
+  function setName(){
+    const n = prompt('Leaderboard name', playerName());
+    if(n == null) return;
+    localStorage.setItem(NAME_KEY, cleanName(n));
+    showToast('LEADERBOARD NAME: '+playerName());
+  }
+  function burst(){
+    const b = document.getElementById('tr-burst');
+    if(!b) return;
+    b.innerHTML = '';
+    for(let i=0;i<48;i++){
+      const p = document.createElement('i');
+      p.className = 'tr-confetti';
+      const a = (Math.PI * 2 * i / 48) + (Math.random() * .5);
+      const d = 90 + Math.random() * 190;
+      p.style.left = '50%';
+      p.style.top = '50%';
+      p.style.setProperty('--tx', `${Math.cos(a)*d}px`);
+      p.style.setProperty('--ty', `${Math.sin(a)*d}px`);
+      p.style.animationDelay = `${Math.random()*120}ms`;
+      p.style.background = i % 3 === 0 ? '#FFFFFF' : (i % 3 === 1 ? '#00FF85' : '#06C49A');
+      b.appendChild(p);
+    }
+    setTimeout(()=>{ if(b) b.innerHTML=''; }, 1200);
   }
 
   function bindInput(){
@@ -878,8 +1018,9 @@ const Trillion = (() => {
   }
 
   function start(){
-    S.best = parseFloat(localStorage.getItem('ew_trillion_best') || '0') || 0;
+    S.best = parseFloat(localStorage.getItem(BEST_KEY) || '0') || 0;
     bindInput();
+    loadLeaderboard();
     reset();
     S.started = true;
   }
@@ -889,7 +1030,7 @@ const Trillion = (() => {
     reset,
     keep(){ S.keepGoing = true; hideWin(); startTimer(); },
     share(){
-      const txt = `I made $1T in ${fmtTime(S.elapsedMs)}.\nElon took 54 years.\nelonsworth.com/trillion`;
+      const txt = `I merged $1T from $1M tiles in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\nelonsworth.com/trillion`;
       if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
         navigator.share({ title:"I made a trillion", text: txt, url:'https://elonsworth.com/trillion' }).catch(()=>{});
         return;
@@ -899,12 +1040,14 @@ const Trillion = (() => {
         setTimeout(()=>{ const b=document.getElementById('tr-share-btn'); if(b) b.textContent='SHARE YOUR RUN'; }, 2000);
       });
     },
+    setName,
     get started(){ return S.started; },
   };
 })();
 function resetTrillion(){ Trillion.reset(); }
 function keepMerging(){ Trillion.keep(); }
 function shareTrillion(){ Trillion.share(); }
+function setTrillionName(){ Trillion.setName(); }
 
 function populateMath(){
   const last = state.history[state.history.length-1];
