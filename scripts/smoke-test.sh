@@ -54,6 +54,8 @@ if(o!==c){console.error('script imbalance:',o,'vs',c);process.exit(1);}
 for id in formula math-components math-page trillion-page tr-board hero live-dot live-text stale-note; do
   check "id=\"$id\" present" grep -q "id=\"$id\"" www/index.html
 done
+check "chart defaults to 1D with no NOW tab" bash -c "grep -q 'class=\"active\" data-range=\"1d\"' www/index.html && ! grep -q 'data-range=\"live\"' www/index.html && ! grep -q '>NOW</span>' www/index.html"
+check "trillion game uses smooth tile layer" bash -c "grep -q '\\.tr-tile' www/index.html && grep -q 'pointerdown' www/index.html && grep -q 'animating' www/index.html"
 
 # 6. Worker TS compiles
 if [ ! -x worker/node_modules/.bin/tsc ]; then

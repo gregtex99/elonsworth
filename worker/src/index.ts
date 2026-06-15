@@ -428,7 +428,7 @@ export default {
         //   - Private holdings + margin loans are modeled at constant current value (rough; not yet historical).
         // For “max” we deliberately switch interval to monthly to keep series small
         // and to dampen the visual effect of SPCX joining as a step-function.
-        const range = (url.searchParams.get("range") || "1mo").toLowerCase();
+        const range = (url.searchParams.get("range") || "1d").toLowerCase();
         const allowed: Record<string, { range: string; interval: string }> = {
           "1d":  { range: "1d",  interval: "5m" },
           "5d":  { range: "5d",  interval: "30m" },
@@ -438,7 +438,7 @@ export default {
           "1y":  { range: "1y",  interval: "1d" },
           "max": { range: "max", interval: "1mo" },
         };
-        const sel = allowed[range] || allowed["1mo"];
+        const sel = allowed[range] || allowed["1d"];
         const hist = await loadHistory(SYMBOLS, sel.range, sel.interval);
         const tArr = hist.TSLA || [];
         const sArr = hist.SPCX || [];
