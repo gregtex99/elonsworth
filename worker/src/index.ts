@@ -233,7 +233,7 @@ async function loadAllQuotes(env: Env): Promise<Record<string, QuoteSnapshot>> {
 function corsHeaders(extra: Record<string, string> = {}) {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json; charset=utf-8",
     ...extra,

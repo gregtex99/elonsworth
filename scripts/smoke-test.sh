@@ -81,6 +81,7 @@ if [ -n "$TARGET" ]; then
   ylw ""
   ylw "=== Live site checks at $TARGET ==="
   check "/api/trillion/leaderboard returns runs array" bash -c "curl -fs --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/trillion/leaderboard | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d[\"runs\"], list)'"
+  check "/api/trillion/leaderboard POST preflight allows browser submit" bash -c "curl -fsI -X OPTIONS --max-time 5 $RESOLVE_OPTS $WORKER_URL/api/trillion/leaderboard -H 'Origin: https://elonsworth.com' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type' | tr -d '\\r' | grep -qi '^access-control-allow-methods: .*POST'"
   check "$TARGET/ returns 200" bash -c "[ \"\$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/)\" = 200 ]"
   check "$TARGET/math reachable (200 after redirect)" bash -c "[ \"\$(curl -sL -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/math)\" = 200 ]"
   check "$TARGET/trillion reachable (200 after redirect)" bash -c "[ \"\$(curl -sL -o /dev/null -w '%{http_code}' --max-time 5 $TARGET/trillion)\" = 200 ]"
