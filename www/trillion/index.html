@@ -138,7 +138,7 @@ body.trillion-route #app-shell{display:none}
 body.trillion-route #math-page{display:none}
 body.trillion-route #trillion-page{display:block}
 .tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg)}
-.tr-wrap.needs-name .tr-stats,.tr-wrap.needs-name .tr-formula,.tr-wrap.needs-name .tr-board,.tr-wrap.needs-name .tr-help,.tr-wrap.needs-name .tr-save,.tr-wrap.needs-name .tr-foot{display:none}
+.tr-wrap.needs-name .tr-stats,.tr-wrap.needs-name .tr-formula,.tr-wrap.needs-name .tr-econ,.tr-wrap.needs-name .tr-board,.tr-wrap.needs-name .tr-help,.tr-wrap.needs-name .tr-save,.tr-wrap.needs-name .tr-foot{display:none}
 .tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
 .tr-top a{color:var(--fg-dim);text-decoration:none}
 .tr-h1{font-family:'Archivo Black',sans-serif;font-size:38px;letter-spacing:-.5px;margin:20px 0 8px}
@@ -158,6 +158,14 @@ body.trillion-route #trillion-page{display:block}
 .tr-stat .v.cur{color:var(--green)}
 .tr-formula{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:10px;line-height:1.45;text-align:center}
 .tr-formula b{color:var(--green);font-weight:500}
+.tr-econ{margin-top:10px;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:12px;padding:10px;font-family:'IBM Plex Mono',monospace}
+.tr-econ-main{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;letter-spacing:1.3px;color:#7A7A82}
+.tr-econ-main b{color:var(--green);font-weight:500;text-align:right}
+.tr-econ-detail{font-size:9px;color:#5F5F66;line-height:1.55;margin-top:7px}
+.tr-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:9px}
+.tr-ladder span{height:18px;border:1px solid #24242A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:7.5px;color:#5F5F66;background:#08080C;white-space:nowrap;overflow:hidden}
+.tr-ladder span.on{border-color:rgba(0,255,133,.65);color:var(--green);background:rgba(0,255,133,.08)}
+.tr-ladder span.next{border-color:rgba(255,255,255,.25);color:#A8A8B0}
 .tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:grab;outline:none;user-select:none;aspect-ratio:1;overflow:hidden}
 .tr-board.dragging{cursor:grabbing}
 .tr-cell-bg{aspect-ratio:1;border-radius:8px;background:#0A0A0E}
@@ -187,6 +195,8 @@ body.trillion-route #trillion-page{display:block}
 .tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
 .tr-save{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.2px;color:#6A6A72}
 .tr-save button{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid #2A2A30;background:transparent;color:var(--fg-dim);border-radius:8px;padding:7px 9px;cursor:pointer}
+.tr-unlock{display:none;margin-top:10px;border:1px solid rgba(0,255,133,.5);background:rgba(0,255,133,.08);border-radius:10px;padding:9px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;color:var(--green);text-align:center}
+.tr-unlock.show{display:block;animation:trAppear 180ms ease}
 .tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
 .tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
 .tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
@@ -379,10 +389,15 @@ body.math-route #math-page{display:block}
     </div>
     <div class="tr-stats">
       <div class="tr-stat"><div class="lbl">NET WORTH</div><div class="v cur" id="tr-score">$0</div></div>
-      <div class="tr-stat"><div class="lbl">BEST</div><div class="v" id="tr-best">$0</div></div>
+      <div class="tr-stat"><div class="lbl">MULTIPLE</div><div class="v" id="tr-multiple">1.00×</div></div>
       <div class="tr-stat"><div class="lbl">PACE</div><div class="v" id="tr-time">0:00</div></div>
     </div>
     <div class="tr-formula" id="tr-formula">$0 CAPITAL × 1.00× FOUNDER MULTIPLE = <b>$0</b></div>
+    <div class="tr-econ">
+      <div class="tr-econ-main"><span id="tr-tranche">BOOTSTRAP TRANCHE</span><b id="tr-last-payout">MERGE TO GET PAID</b></div>
+      <div class="tr-econ-detail" id="tr-multiple-detail">TRANCHE 1.00× · FOCUS 1.00× · EXECUTION 1.00×</div>
+      <div class="tr-ladder" id="tr-ladder"></div>
+    </div>
     <div class="tr-board" id="tr-board" tabindex="0">
       <div class="tr-overlay" id="tr-win">
         <div class="tr-burst" id="tr-burst"></div>
@@ -402,6 +417,7 @@ body.math-route #math-page{display:block}
       </div>
     </div>
     <div class="tr-help">DRAG / SWIPE · OR CLICK BOARD + ARROW KEYS / WASD</div>
+    <div class="tr-unlock" id="tr-unlock"></div>
     <div class="tr-save"><span id="tr-game-code">GAME —</span><button id="tr-link-btn" onclick="copyTrillionLink()">COPY LINK</button></div>
     <div class="tr-foot">
       <button class="new" onclick="resetTrillion()">NEW GAME</button>
@@ -415,7 +431,7 @@ body.math-route #math-page{display:block}
       <div class="tr-leader-list" id="tr-leader-list">
         <div class="tr-leader-empty">NO $1T RUNS YET.</div>
       </div>
-      <div class="tr-leader-note">FASTEST $1T MERGED RUNS. GLOBAL SCORES ARE CLIENT-VERIFIED.</div>
+      <div class="tr-leader-note">FASTEST $1T NET WORTH RUNS. GLOBAL SCORES ARE CLIENT-VERIFIED.</div>
     </div>
   </div>
 </div>
@@ -717,6 +733,17 @@ const Trillion = (() => {
   const GAME_PREFIX = 'ew_trillion_game_v1_';
   const GAME_INDEX_KEY = 'ew_trillion_game_index_v1';
   const GAME_ID_RE = /^[a-z0-9]{10,24}$/;
+  const TRANCHE_DEFS = [
+    { name:'BOOTSTRAP', tileM:0, base:1.00, short:'BOOT' },
+    { name:'SEED', tileM:1_000, base:1.28, short:'SEED' },
+    { name:'SERIES A', tileM:2_000, base:1.75, short:'A' },
+    { name:'SERIES B', tileM:4_000, base:2.55, short:'B' },
+    { name:'SERIES C', tileM:8_000, base:3.65, short:'C' },
+    { name:'SPACEX SCALE', tileM:16_000, base:5.35, short:'SPCX' },
+    { name:'XAI MERGER', tileM:32_000, base:7.10, short:'XAI' },
+    { name:'IPO LOCKUP', tileM:64_000, base:9.25, short:'IPO' },
+    { name:'MARS MODE', tileM:128_000, base:11.50, short:'MARS' },
+  ];
 
   const valueForLevel = lvl => lvl ? Math.pow(2, lvl - 1) : 0;
   const labelFor = lvl => {
@@ -757,9 +784,13 @@ const Trillion = (() => {
     spawnCells: [],
     mergeCells: [],
     executionStreak: 0,
+    lastMergeM: 0,
+    lastPayoutM: 0,
+    lastMultiple: 1,
     gameId: '',
     over: false,
     lastAutoSaveMs: 0,
+    unlockTimer: null,
   };
 
   function fmtMoneyM(m){
@@ -779,16 +810,19 @@ const Trillion = (() => {
     const p = Math.pow(10, places);
     return Math.round(n * p) / p;
   }
+  function trancheForTileM(bestTileM){
+    let idx = 0;
+    for(let i=0;i<TRANCHE_DEFS.length;i++){
+      if(bestTileM >= TRANCHE_DEFS[i].tileM) idx = i;
+    }
+    return { ...TRANCHE_DEFS[idx], index:idx };
+  }
+  function nextTranche(bestTileM){
+    const cur = trancheForTileM(bestTileM);
+    return TRANCHE_DEFS[cur.index + 1] ? { ...TRANCHE_DEFS[cur.index + 1], index:cur.index + 1 } : null;
+  }
   function founderRoundMultiple(bestTileM){
-    if(bestTileM >= 128_000) return 11.5;
-    if(bestTileM >= 64_000) return 9.25;
-    if(bestTileM >= 32_000) return 7.1;
-    if(bestTileM >= 16_000) return 5.35;
-    if(bestTileM >= 8_000) return 3.65;
-    if(bestTileM >= 4_000) return 2.55;
-    if(bestTileM >= 2_000) return 1.75;
-    if(bestTileM >= 1_000) return 1.28;
-    return 1;
+    return trancheForTileM(bestTileM).base;
   }
   function highestTileInfo(){
     let level = 0, valueM = 0, r = -1, c = -1;
@@ -805,14 +839,51 @@ const Trillion = (() => {
   }
   function founderStats(){
     const top = highestTileInfo();
-    const round = founderRoundMultiple(top.valueM);
+    const tranche = trancheForTileM(top.valueM);
+    const next = nextTranche(top.valueM);
+    const round = tranche.base;
     const inCorner = top.level > 0 && ((top.r === 0 || top.r === 3) && (top.c === 0 || top.c === 3));
     const onEdge = top.level > 0 && (top.r === 0 || top.r === 3 || top.c === 0 || top.c === 3);
     const focus = inCorner ? 1.18 : (onEdge ? 1.07 : 1);
     const execution = 1 + Math.min(0.55, Math.max(0, S.executionStreak) * 0.018);
     const multiple = roundTo(round * focus * execution, 2);
     const netWorthM = Math.floor(S.score * multiple);
-    return { capitalM: Math.floor(S.score), bestTileM: top.valueM, multiple, netWorthM, focus, execution };
+    return { capitalM: Math.floor(S.score), bestTileM: top.valueM, multiple, netWorthM, focus, execution, tranche, next, executionStreak:S.executionStreak };
+  }
+  function showTrancheUnlock(tranche, next){
+    const el = document.getElementById('tr-unlock');
+    if(!el) return;
+    el.textContent = `TRANCHE UNLOCKED: ${tranche.name} · BASE ${tranche.base.toFixed(2)}×${next ? ` · NEXT ${next.name} AT ${fmtMoneyM(next.tileM)} TILE` : ' · TOP TRANCHE'}`;
+    el.classList.add('show');
+    clearTimeout(S.unlockTimer);
+    S.unlockTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+  }
+  function renderEconomy(stats){
+    const mult = document.getElementById('tr-multiple');
+    if(mult) mult.textContent = `${stats.multiple.toFixed(2)}×`;
+    const formula = document.getElementById('tr-formula');
+    if(formula) formula.innerHTML = `NET WORTH = ${fmtMoneyM(stats.capitalM)} CAPITAL × ${stats.multiple.toFixed(2)}× MULTIPLE = <b>${fmtMoneyM(stats.netWorthM)}</b>`;
+    const tranche = document.getElementById('tr-tranche');
+    if(tranche) tranche.textContent = `${stats.tranche.name} TRANCHE · ${stats.tranche.base.toFixed(2)}× BASE`;
+    const last = document.getElementById('tr-last-payout');
+    if(last){
+      if(S.lastMergeM > 0) last.textContent = `LAST JOIN +${fmtMoneyM(S.lastPayoutM)}`;
+      else if(S.moves > 0) last.textContent = 'NO DEAL · STREAK CUT';
+      else last.textContent = 'MERGE TO GET PAID';
+    }
+    const detail = document.getElementById('tr-multiple-detail');
+    if(detail){
+      const lastText = S.lastMergeM > 0 ? `LAST ${fmtMoneyM(S.lastMergeM)} JOIN @ ${S.lastMultiple.toFixed(2)}×` : 'EACH JOIN PAYS THROUGH THE CURRENT MULTIPLE';
+      const nextText = stats.next ? `NEXT ${stats.next.name}: ${fmtMoneyM(stats.next.tileM)} TILE → ${stats.next.base.toFixed(2)}× BASE` : 'ALL TRANCHES UNLOCKED';
+      detail.textContent = `TRANCHE ${stats.tranche.base.toFixed(2)}× · FOCUS ${stats.focus.toFixed(2)}× · EXECUTION ${stats.execution.toFixed(2)}× · ${lastText} · ${nextText}`;
+    }
+    const ladder = document.getElementById('tr-ladder');
+    if(ladder){
+      ladder.innerHTML = TRANCHE_DEFS.map((t, i) => {
+        const cls = i === stats.tranche.index ? 'on' : (stats.next && i === stats.next.index ? 'next' : '');
+        return `<span class="${cls}">${t.short}</span>`;
+      }).join('');
+    }
   }
 
   function cleanGameId(id){
@@ -883,6 +954,9 @@ const Trillion = (() => {
         moves: Math.max(0, Math.floor(Number(data.moves) || 0)),
         elapsedMs: Math.max(0, Math.floor(Number(data.elapsedMs) || 0)),
         executionStreak: Math.max(0, Math.floor(Number(data.executionStreak) || 0)),
+        lastMergeM: Math.max(0, Math.floor(Number(data.lastMergeM) || 0)),
+        lastPayoutM: Math.max(0, Math.floor(Number(data.lastPayoutM) || 0)),
+        lastMultiple: Math.max(1, Number(data.lastMultiple) || 1),
         won: !!data.won,
         keepGoing: !!data.keepGoing,
         submittedWin: !!data.submittedWin,
@@ -904,6 +978,9 @@ const Trillion = (() => {
         moves: Math.floor(S.moves),
         elapsedMs: Math.max(0, Math.floor(S.elapsedMs)),
         executionStreak: Math.max(0, Math.floor(S.executionStreak)),
+        lastMergeM: Math.max(0, Math.floor(S.lastMergeM)),
+        lastPayoutM: Math.max(0, Math.floor(S.lastPayoutM)),
+        lastMultiple: roundTo(S.lastMultiple || 1, 2),
         name: playerName(),
         won: !!S.won,
         keepGoing: !!S.keepGoing,
@@ -1085,13 +1162,19 @@ const Trillion = (() => {
   function finishMove(plan){
     const board = document.getElementById('tr-board');
     if(board) board.classList.remove('animating','dragging','snapback');
+    const before = founderStats();
     S.grid = plan.grid;
     S.score += plan.scoreGain;
     S.executionStreak = plan.scoreGain > 0 ? Math.min(40, S.executionStreak + 1) : Math.floor(S.executionStreak * 0.55);
     S.moves++;
     S.over = false;
-    const worth = founderStats().netWorthM;
+    const after = founderStats();
+    const worth = after.netWorthM;
+    S.lastMergeM = plan.scoreGain;
+    S.lastPayoutM = Math.max(0, worth - before.netWorthM);
+    S.lastMultiple = after.multiple;
     if(worth > S.best){ S.best = worth; localStorage.setItem(BEST_KEY, String(S.best)); }
+    if(after.tranche.index > before.tranche.index) showTrancheUnlock(after.tranche, after.next);
     const spawned = spawn();
     S.spawnCells = spawned ? [spawned] : [];
     S.mergeCells = plan.mergeCells;
@@ -1159,9 +1242,7 @@ const Trillion = (() => {
     board.appendChild(overOv);
     const stats = founderStats();
     document.getElementById('tr-score').textContent = fmtMoneyM(stats.netWorthM);
-    document.getElementById('tr-best').textContent = fmtMoneyM(S.best);
-    const formula = document.getElementById('tr-formula');
-    if(formula) formula.innerHTML = `${fmtMoneyM(stats.capitalM)} CAPITAL × ${stats.multiple.toFixed(2)}× FOUNDER MULTIPLE = <b>${fmtMoneyM(stats.netWorthM)}</b>`;
+    renderEconomy(stats);
     updateGameMeta();
     S.spawnCells = [];
     S.mergeCells = [];
@@ -1205,6 +1286,8 @@ const Trillion = (() => {
 
   function reset(opts = {}){
     stopTimer();
+    const unlock = document.getElementById('tr-unlock');
+    if(unlock) unlock.classList.remove('show');
     if(opts.newId !== false || !S.gameId){
       S.gameId = newGameId();
       setGameUrl(opts.pushUrl === false ? 'replace' : 'push');
@@ -1213,7 +1296,7 @@ const Trillion = (() => {
     }
     S.grid = Array(4).fill().map(()=>Array(4).fill(0));
     S.score = 0; S.moves = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false; S.submittedWin = false;
-    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.executionStreak = 0; S.over = false;
+    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.executionStreak = 0; S.lastMergeM = 0; S.lastPayoutM = 0; S.lastMultiple = 1; S.over = false;
     hideWin(); hideOver();
     const a = spawn(), b = spawn();
     S.spawnCells = [a, b].filter(Boolean);
@@ -1232,6 +1315,9 @@ const Trillion = (() => {
     S.moves = saved.moves;
     S.elapsedMs = saved.elapsedMs;
     S.executionStreak = saved.executionStreak || 0;
+    S.lastMergeM = saved.lastMergeM || 0;
+    S.lastPayoutM = saved.lastPayoutM || 0;
+    S.lastMultiple = saved.lastMultiple || 1;
     S.won = saved.won;
     S.keepGoing = saved.keepGoing;
     S.submittedWin = saved.submittedWin;
@@ -1239,6 +1325,8 @@ const Trillion = (() => {
     S.animating = false;
     S.spawnCells = [];
     S.mergeCells = [];
+    const unlock = document.getElementById('tr-unlock');
+    if(unlock) unlock.classList.remove('show');
     hideWin(); hideOver();
     render();
     document.getElementById('tr-time').textContent = fmtTime(S.elapsedMs);
@@ -1546,7 +1634,7 @@ const Trillion = (() => {
       saveGame();
       const href = absoluteGameUrl();
       const stats = founderStats();
-      const txt = `I compounded ${fmtMoneyM(stats.capitalM)} capital into ${fmtMoneyM(stats.netWorthM)} at ${stats.multiple.toFixed(2)}× in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\n${href}`;
+      const txt = `I compounded ${fmtMoneyM(stats.capitalM)} capital into ${fmtMoneyM(stats.netWorthM)} at ${stats.multiple.toFixed(2)}× (${stats.tranche.name}) in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\n${href}`;
       if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
         navigator.share({ title:"I made a trillion", text: txt, url:href }).catch(()=>{});
         return;
