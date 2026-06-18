@@ -174,6 +174,8 @@ body.trillion-route #trillion-page{display:block}
 .tr-confetti{position:absolute;width:6px;height:12px;background:var(--green);opacity:.92;animation:trConfettiBurst 900ms ease-out forwards}
 @keyframes trConfettiBurst{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(1) rotate(540deg);opacity:0}}
 .tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
+.tr-save{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.2px;color:#6A6A72}
+.tr-save button{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid #2A2A30;background:transparent;color:var(--fg-dim);border-radius:8px;padding:7px 9px;cursor:pointer}
 .tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
 .tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
 .tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
@@ -380,6 +382,7 @@ body.math-route #math-page{display:block}
       </div>
     </div>
     <div class="tr-help">DRAG / SWIPE · OR CLICK BOARD + ARROW KEYS / WASD</div>
+    <div class="tr-save"><span id="tr-game-code">GAME —</span><button id="tr-link-btn" onclick="copyTrillionLink()">COPY LINK</button></div>
     <div class="tr-foot">
       <button class="new" onclick="resetTrillion()">NEW GAME</button>
       <div class="taunt">1M MODE: 20 DOUBLINGS TO A $1T TILE.<br>NO PRESSURE.</div>
@@ -646,12 +649,13 @@ function closeMath(){
   document.title = "Elon's Worth — Live Net Worth Tracker";
 }
 function openTrillion(){
-  history.pushState({route:'trillion'},'','/trillion');
+  history.pushState({route:'trillion'},'', Trillion.started ? Trillion.url() : '/trillion');
   document.body.classList.remove('math-route');
   document.body.classList.add('trillion-route');
   document.title = '/trillion — Make a Trillion';
   window.scrollTo(0,0);
-  if(!Trillion.started) Trillion.start();
+  if(Trillion.started) Trillion.syncRoute();
+  else Trillion.start();
 }
 function closeTrillion(){
   history.pushState({route:'home'},'','/');
@@ -670,7 +674,8 @@ function routeFromPath(){
     document.body.classList.add('trillion-route');
     document.body.classList.remove('math-route');
     document.title = '/trillion — Make a Trillion';
-    if(!Trillion.started) Trillion.start();
+    if(Trillion.started) Trillion.syncRoute();
+    else Trillion.start();
   } else {
     document.body.classList.remove('math-route','trillion-route');
     document.title = "Elon's Worth — Live Net Worth Tracker";
@@ -688,6 +693,9 @@ const Trillion = (() => {
   const BEST_KEY = 'ew_trillion_best_m_v2';
   const RUNS_KEY = 'ew_trillion_runs_v2';
   const NAME_KEY = 'ew_trillion_name_v2';
+  const GAME_PREFIX = 'ew_trillion_game_v1_';
+  const GAME_INDEX_KEY = 'ew_trillion_game_index_v1';
+  const GAME_ID_RE = /^[a-z0-9]{10,24}$/;
 
   const valueForLevel = lvl => lvl ? Math.pow(2, lvl - 1) : 0;
   const labelFor = lvl => {
@@ -727,6 +735,9 @@ const Trillion = (() => {
     animating: false,
     spawnCells: [],
     mergeCells: [],
+    gameId: '',
+    over: false,
+    lastAutoSaveMs: 0,
   };
 
   function fmtMoneyM(m){
@@ -741,6 +752,112 @@ const Trillion = (() => {
     const s = Math.floor(ms/1000);
     const m = Math.floor(s/60), r = s%60;
     return m+':'+String(r).padStart(2,'0');
+  }
+
+  function cleanGameId(id){
+    const out = String(id || '').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0, 24);
+    return GAME_ID_RE.test(out) ? out : '';
+  }
+  function newGameId(){
+    const prefix = Date.now().toString(36);
+    let suffix = '';
+    try{
+      const bytes = new Uint8Array(8);
+      crypto.getRandomValues(bytes);
+      suffix = Array.from(bytes, b => (b % 36).toString(36)).join('');
+    }catch(e){
+      suffix = Math.random().toString(36).slice(2, 10);
+    }
+    return cleanGameId(prefix + suffix) || cleanGameId(prefix + Math.random().toString(36).slice(2, 12));
+  }
+  function gameIdFromUrl(){
+    try{ return cleanGameId(new URLSearchParams(location.search).get('game')); }
+    catch(e){ return ''; }
+  }
+  function gamePath(id = S.gameId){
+    return id ? `/trillion?game=${encodeURIComponent(id)}` : '/trillion';
+  }
+  function absoluteGameUrl(){
+    return location.origin + gamePath(S.gameId);
+  }
+  function setGameUrl(mode = 'replace'){
+    if(!document.body.classList.contains('trillion-route')) return;
+    history[mode === 'push' ? 'pushState' : 'replaceState']({route:'trillion', game:S.gameId}, '', gamePath(S.gameId));
+  }
+  function updateGameMeta(){
+    const code = document.getElementById('tr-game-code');
+    if(code) code.textContent = S.gameId ? `GAME ${S.gameId.slice(-6).toUpperCase()} · SAVED` : 'GAME —';
+  }
+  function gameStorageKey(id = S.gameId){ return GAME_PREFIX + id; }
+  function rememberGame(id, ts){
+    try{
+      const raw = JSON.parse(localStorage.getItem(GAME_INDEX_KEY) || '[]');
+      const rows = Array.isArray(raw) ? raw.filter(x => x && cleanGameId(x.id) && x.id !== id) : [];
+      rows.unshift({ id, ts });
+      for(const old of rows.slice(25)){
+        try{ localStorage.removeItem(gameStorageKey(old.id)); }catch(e){}
+      }
+      localStorage.setItem(GAME_INDEX_KEY, JSON.stringify(rows.slice(0, 25)));
+    }catch(e){}
+  }
+  function validGrid(grid){
+    if(!Array.isArray(grid) || grid.length !== 4) return null;
+    const out = [];
+    for(const row of grid){
+      if(!Array.isArray(row) || row.length !== 4) return null;
+      const clean = row.map(v => Number.isInteger(v) && v >= 0 && v <= 32 ? v : NaN);
+      if(clean.some(Number.isNaN)) return null;
+      out.push(clean);
+    }
+    return out;
+  }
+  function savedGame(id){
+    try{
+      const data = JSON.parse(localStorage.getItem(gameStorageKey(id)) || 'null');
+      const grid = validGrid(data?.grid);
+      if(!grid) return null;
+      return {
+        grid,
+        score: Math.max(0, Math.floor(Number(data.score) || 0)),
+        moves: Math.max(0, Math.floor(Number(data.moves) || 0)),
+        elapsedMs: Math.max(0, Math.floor(Number(data.elapsedMs) || 0)),
+        won: !!data.won,
+        keepGoing: !!data.keepGoing,
+        submittedWin: !!data.submittedWin,
+        over: !!data.over,
+      };
+    }catch(e){ return null; }
+  }
+  function saveGame(){
+    if(!S.gameId) return;
+    try{
+      if(S.timer) S.elapsedMs = Date.now() - S.startMs;
+      S.over = !S.won && !hasMoves();
+      const ts = Date.now();
+      localStorage.setItem(gameStorageKey(), JSON.stringify({
+        v: 1,
+        id: S.gameId,
+        grid: S.grid,
+        score: Math.floor(S.score),
+        moves: Math.floor(S.moves),
+        elapsedMs: Math.max(0, Math.floor(S.elapsedMs)),
+        won: !!S.won,
+        keepGoing: !!S.keepGoing,
+        submittedWin: !!S.submittedWin,
+        over: !!S.over,
+        ts,
+      }));
+      rememberGame(S.gameId, ts);
+      updateGameMeta();
+    }catch(e){}
+  }
+  function copyLink(){
+    const href = absoluteGameUrl();
+    navigator.clipboard.writeText(href).then(()=>{
+      const b = document.getElementById('tr-link-btn');
+      if(b) b.textContent = 'COPIED';
+      setTimeout(()=>{ const btn=document.getElementById('tr-link-btn'); if(btn) btn.textContent='COPY LINK'; }, 1600);
+    }).catch(()=>showToast(href));
   }
 
   function emptyCells(){
@@ -907,23 +1024,28 @@ const Trillion = (() => {
     S.grid = plan.grid;
     S.score += plan.scoreGain;
     S.moves++;
+    S.over = false;
     if(S.score > S.best){ S.best = S.score; localStorage.setItem(BEST_KEY, String(S.best)); }
     const spawned = spawn();
     S.spawnCells = spawned ? [spawned] : [];
     S.mergeCells = plan.mergeCells;
     render();
     S.animating = false;
+    let terminal = false;
     // Win check: the stat hits $1T long before a literal $1T tile could exist.
     if(!S.won && !S.keepGoing && S.score >= TARGET_SCORE_M){
       S.won = true;
       stopTimer();
       showWin();
+      terminal = true;
     }
     // Game over check
     if(!S.won && !hasMoves()){
       stopTimer();
       showOver();
+      terminal = true;
     }
+    if(!terminal) saveGame();
   }
 
   function move(dir, drag){
@@ -972,6 +1094,7 @@ const Trillion = (() => {
     board.appendChild(overOv);
     document.getElementById('tr-score').textContent = fmtMoneyM(S.score);
     document.getElementById('tr-best').textContent = fmtMoneyM(S.best);
+    updateGameMeta();
     S.spawnCells = [];
     S.mergeCells = [];
   }
@@ -979,35 +1102,81 @@ const Trillion = (() => {
   function tickTimer(){
     S.elapsedMs = Date.now() - S.startMs;
     document.getElementById('tr-time').textContent = fmtTime(S.elapsedMs);
+    if(Date.now() - S.lastAutoSaveMs > 5000){
+      S.lastAutoSaveMs = Date.now();
+      saveGame();
+    }
   }
   function startTimer(){ stopTimer(); S.startMs = Date.now() - S.elapsedMs; S.timer = setInterval(tickTimer, 250); }
-  function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer = null; } }
+  function stopTimer(){
+    if(S.timer){
+      S.elapsedMs = Date.now() - S.startMs;
+      const t = document.getElementById('tr-time');
+      if(t) t.textContent = fmtTime(S.elapsedMs);
+      clearInterval(S.timer);
+      S.timer = null;
+    }
+  }
 
-  function showWin(){
+  function showWin(opts = {}){
     document.getElementById('tr-win-time').textContent = fmtTime(S.elapsedMs);
     document.getElementById('tr-win-moves').textContent = String(S.moves);
     document.getElementById('tr-win').classList.add('show');
-    burst();
-    submitRun();
+    if(opts.burst !== false) burst();
+    if(opts.submit !== false) submitRun();
+    if(opts.save !== false) saveGame();
   }
   function hideWin(){ document.getElementById('tr-win').classList.remove('show'); }
-  function showOver(){
+  function showOver(opts = {}){
+    S.over = true;
     document.getElementById('tr-over-score').textContent = fmtMoneyM(S.score);
     document.getElementById('tr-over').classList.add('show');
+    if(opts.save !== false) saveGame();
   }
   function hideOver(){ document.getElementById('tr-over').classList.remove('show'); }
 
-  function reset(){
+  function reset(opts = {}){
     stopTimer();
+    if(opts.newId !== false || !S.gameId){
+      S.gameId = newGameId();
+      setGameUrl(opts.pushUrl === false ? 'replace' : 'push');
+    } else {
+      setGameUrl('replace');
+    }
     S.grid = Array(4).fill().map(()=>Array(4).fill(0));
     S.score = 0; S.moves = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false; S.submittedWin = false;
-    S.animating = false; S.spawnCells = []; S.mergeCells = [];
+    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.over = false;
     hideWin(); hideOver();
     const a = spawn(), b = spawn();
     S.spawnCells = [a, b].filter(Boolean);
     render();
     document.getElementById('tr-time').textContent = '0:00';
     startTimer();
+    saveGame();
+  }
+
+  function restore(id, saved){
+    stopTimer();
+    S.gameId = id;
+    setGameUrl('replace');
+    S.grid = saved.grid;
+    S.score = saved.score;
+    S.moves = saved.moves;
+    S.elapsedMs = saved.elapsedMs;
+    S.won = saved.won;
+    S.keepGoing = saved.keepGoing;
+    S.submittedWin = saved.submittedWin;
+    S.over = saved.over;
+    S.animating = false;
+    S.spawnCells = [];
+    S.mergeCells = [];
+    hideWin(); hideOver();
+    render();
+    document.getElementById('tr-time').textContent = fmtTime(S.elapsedMs);
+    if(S.won && !S.keepGoing) showWin({ submit:false, burst:false, save:false });
+    else if(S.over || !hasMoves()) showOver({ save:false });
+    else startTimer();
+    saveGame();
   }
 
   function highestTileM(){
@@ -1213,18 +1382,43 @@ const Trillion = (() => {
     S.best = parseFloat(localStorage.getItem(BEST_KEY) || '0') || 0;
     bindInput();
     loadLeaderboard();
-    reset();
+    const id = gameIdFromUrl();
+    if(id){
+      const saved = savedGame(id);
+      if(saved) restore(id, saved);
+      else { S.gameId = id; reset({ newId:false, pushUrl:false }); }
+    } else {
+      S.gameId = newGameId();
+      setGameUrl('replace');
+      reset({ newId:false, pushUrl:false });
+    }
     S.started = true;
+  }
+  function syncRoute(){
+    const id = gameIdFromUrl();
+    if(!id){
+      if(S.gameId) setGameUrl('replace');
+      return;
+    }
+    if(id === S.gameId) return;
+    const saved = savedGame(id);
+    if(saved) restore(id, saved);
+    else { S.gameId = id; reset({ newId:false, pushUrl:false }); }
   }
 
   return {
     start,
     reset,
-    keep(){ S.keepGoing = true; hideWin(); startTimer(); },
+    syncRoute,
+    url: gamePath,
+    keep(){ S.keepGoing = true; hideWin(); startTimer(); saveGame(); },
+    copyLink: copyLink,
     share(){
-      const txt = `I merged $1T from $1M tiles in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\nelonsworth.com/trillion`;
+      saveGame();
+      const href = absoluteGameUrl();
+      const txt = `I merged $1T from $1M tiles in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\n${href}`;
       if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
-        navigator.share({ title:"I made a trillion", text: txt, url:'https://elonsworth.com/trillion' }).catch(()=>{});
+        navigator.share({ title:"I made a trillion", text: txt, url:href }).catch(()=>{});
         return;
       }
       navigator.clipboard.writeText(txt).then(()=>{
@@ -1240,6 +1434,7 @@ function resetTrillion(){ Trillion.reset(); }
 function keepMerging(){ Trillion.keep(); }
 function shareTrillion(){ Trillion.share(); }
 function setTrillionName(){ Trillion.setName(); }
+function copyTrillionLink(){ Trillion.copyLink(); }
 
 function populateMath(){
   const last = state.history[state.history.length-1];
