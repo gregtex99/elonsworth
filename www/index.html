@@ -138,15 +138,26 @@ body.trillion-route #app-shell{display:none}
 body.trillion-route #math-page{display:none}
 body.trillion-route #trillion-page{display:block}
 .tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg)}
+.tr-wrap.needs-name .tr-stats,.tr-wrap.needs-name .tr-formula,.tr-wrap.needs-name .tr-board,.tr-wrap.needs-name .tr-help,.tr-wrap.needs-name .tr-save,.tr-wrap.needs-name .tr-foot{display:none}
 .tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
 .tr-top a{color:var(--fg-dim);text-decoration:none}
 .tr-h1{font-family:'Archivo Black',sans-serif;font-size:38px;letter-spacing:-.5px;margin:20px 0 8px}
 .tr-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-dim);line-height:1.6}
+.tr-name-gate{display:none;margin-top:18px;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:12px;padding:14px}
+.tr-wrap.needs-name .tr-name-gate{display:block}
+.tr-name-title{font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:0}
+.tr-name-copy{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7A7A82;line-height:1.55;margin-top:5px}
+.tr-name-row{display:flex;gap:8px;margin-top:12px}
+.tr-name-row input{min-width:0;flex:1;background:#08080C;color:var(--fg);border:1px solid #2A2A30;border-radius:10px;padding:12px 12px;font-family:'IBM Plex Mono',monospace;font-size:14px;text-transform:uppercase;letter-spacing:1px;outline:none}
+.tr-name-row input:focus{border-color:rgba(0,255,133,.65);box-shadow:0 0 0 2px rgba(0,255,133,.12)}
+.tr-name-row button{background:var(--green);color:var(--green-d);border:0;border-radius:10px;padding:0 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;white-space:nowrap}
 .tr-stats{display:flex;gap:8px;margin-top:18px}
 .tr-stat{flex:1;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:10px;padding:9px 0;text-align:center}
 .tr-stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:#6A6A72}
 .tr-stat .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:3px}
 .tr-stat .v.cur{color:var(--green)}
+.tr-formula{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:10px;line-height:1.45;text-align:center}
+.tr-formula b{color:var(--green);font-weight:500}
 .tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:grab;outline:none;user-select:none;aspect-ratio:1;overflow:hidden}
 .tr-board.dragging{cursor:grabbing}
 .tr-cell-bg{aspect-ratio:1;border-radius:8px;background:#0A0A0E}
@@ -351,25 +362,34 @@ body.math-route #math-page{display:block}
 </div>
 
 <div id="trillion-page">
-  <div class="tr-wrap">
+  <div class="tr-wrap" id="tr-wrap">
     <div class="tr-top">
       <a href="/" onclick="closeTrillion();return false">← ELONSWORTH.COM</a>
       <span>EASTER EGG</span>
     </div>
     <div class="tr-h1">MAKE A TRILLION</div>
-    <div class="tr-sub">MERGE HIS MONEY. $1M + $1M UNTIL THE RUN CROSSES $1T.</div>
+    <div class="tr-sub">MERGE CAPITAL. KEEP FOCUS. COMPOUND IT INTO A $1T NET WORTH.</div>
+    <div class="tr-name-gate" id="tr-name-gate">
+      <div class="tr-name-title">CLAIM YOUR RUN</div>
+      <div class="tr-name-copy">Pick a leaderboard name before the clock starts. Letters and numbers only.</div>
+      <div class="tr-name-row">
+        <input id="tr-name-input" maxlength="12" autocomplete="off" inputmode="text" placeholder="NAME">
+        <button onclick="startTrillionFromName()">START</button>
+      </div>
+    </div>
     <div class="tr-stats">
-      <div class="tr-stat"><div class="lbl">MERGED</div><div class="v cur" id="tr-score">$0</div></div>
+      <div class="tr-stat"><div class="lbl">NET WORTH</div><div class="v cur" id="tr-score">$0</div></div>
       <div class="tr-stat"><div class="lbl">BEST</div><div class="v" id="tr-best">$0</div></div>
       <div class="tr-stat"><div class="lbl">PACE</div><div class="v" id="tr-time">0:00</div></div>
     </div>
+    <div class="tr-formula" id="tr-formula">$0 CAPITAL × 1.00× FOUNDER MULTIPLE = <b>$0</b></div>
     <div class="tr-board" id="tr-board" tabindex="0">
       <div class="tr-overlay" id="tr-win">
         <div class="tr-burst" id="tr-burst"></div>
         <div class="big">$1T</div>
         <div class="him">SPCX IPO UNLOCKED.</div>
         <div class="vs">YOU: <span id="tr-win-time">0:00</span> · <span id="tr-win-moves">0</span> MOVES · HIM: 54 YEARS</div>
-        <div class="why">A literal $1T tile from $1M seeds is 20 doublings. This run celebrates the moment your total merged value crosses $1T.</div>
+        <div class="why">Capital compounds through valuation rounds, focus, and execution streaks. $1T takes a top-tier 2048 run.</div>
         <div class="row">
           <button class="btn pri" onclick="shareTrillion()" id="tr-share-btn">SHARE YOUR RUN</button>
           <button class="btn sec" onclick="keepMerging()">KEEP MERGING</button>
@@ -377,7 +397,7 @@ body.math-route #math-page{display:block}
       </div>
       <div class="tr-overlay" id="tr-over">
         <div class="him" style="color:var(--red);font-size:26px">NO MORE MOVES</div>
-        <div class="vs">EVEN HE HAS RED DAYS. MERGED: <span id="tr-over-score">$0</span></div>
+        <div class="vs">EVEN HE HAS RED DAYS. NET WORTH: <span id="tr-over-score">$0</span></div>
         <button class="btn retry" onclick="resetTrillion()" style="margin-top:10px">TRY AGAIN</button>
       </div>
     </div>
@@ -385,7 +405,7 @@ body.math-route #math-page{display:block}
     <div class="tr-save"><span id="tr-game-code">GAME —</span><button id="tr-link-btn" onclick="copyTrillionLink()">COPY LINK</button></div>
     <div class="tr-foot">
       <button class="new" onclick="resetTrillion()">NEW GAME</button>
-      <div class="taunt">1M MODE: 20 DOUBLINGS TO A $1T TILE.<br>NO PRESSURE.</div>
+      <div class="taunt">CAPITAL × FOUNDER MULTIPLE.<br>NO IDLING.</div>
     </div>
     <div class="tr-leader">
       <div class="tr-leader-head">
@@ -683,15 +703,16 @@ function routeFromPath(){
 }
 window.addEventListener('popstate', routeFromPath);
 
-/* ========== /trillion: 2048-clone, $1M -> $1T merged ========== */
+/* ========== /trillion: 2048-clone, $1M capital -> $1T net worth ========== */
 const Trillion = (() => {
-  // Tile values are powers of 2 expressed in millions of dollars.
+  // Tile values are powers of 2 expressed in millions of dollars. The win
+  // condition is net worth: merged capital compounded by the founder multiple.
   // Level: 0 (empty) | 1 ($1M) | 2 ($2M) | ... | 21 ($1.05T tile)
-  const TARGET_SCORE_M = 1_000_000; // $1T total merged value
+  const TARGET_SCORE_M = 1_000_000; // $1T net worth
   const WIN_TILE_LEVEL = 21;        // 2^20 * $1M = $1.048576T
   const MOVE_ANIM_MS = 112;
-  const BEST_KEY = 'ew_trillion_best_m_v2';
-  const RUNS_KEY = 'ew_trillion_runs_v2';
+  const BEST_KEY = 'ew_trillion_best_m_v3';
+  const RUNS_KEY = 'ew_trillion_runs_v3';
   const NAME_KEY = 'ew_trillion_name_v2';
   const GAME_PREFIX = 'ew_trillion_game_v1_';
   const GAME_INDEX_KEY = 'ew_trillion_game_index_v1';
@@ -735,6 +756,7 @@ const Trillion = (() => {
     animating: false,
     spawnCells: [],
     mergeCells: [],
+    executionStreak: 0,
     gameId: '',
     over: false,
     lastAutoSaveMs: 0,
@@ -752,6 +774,45 @@ const Trillion = (() => {
     const s = Math.floor(ms/1000);
     const m = Math.floor(s/60), r = s%60;
     return m+':'+String(r).padStart(2,'0');
+  }
+  function roundTo(n, places = 2){
+    const p = Math.pow(10, places);
+    return Math.round(n * p) / p;
+  }
+  function founderRoundMultiple(bestTileM){
+    if(bestTileM >= 128_000) return 11.5;
+    if(bestTileM >= 64_000) return 9.25;
+    if(bestTileM >= 32_000) return 7.1;
+    if(bestTileM >= 16_000) return 5.35;
+    if(bestTileM >= 8_000) return 3.65;
+    if(bestTileM >= 4_000) return 2.55;
+    if(bestTileM >= 2_000) return 1.75;
+    if(bestTileM >= 1_000) return 1.28;
+    return 1;
+  }
+  function highestTileInfo(){
+    let level = 0, valueM = 0, r = -1, c = -1;
+    for(let rr=0;rr<4;rr++) for(let cc=0;cc<4;cc++){
+      const lvl = S.grid[rr][cc];
+      if(lvl > level){
+        level = lvl;
+        valueM = valueForLevel(lvl);
+        r = rr;
+        c = cc;
+      }
+    }
+    return { level, valueM, r, c };
+  }
+  function founderStats(){
+    const top = highestTileInfo();
+    const round = founderRoundMultiple(top.valueM);
+    const inCorner = top.level > 0 && ((top.r === 0 || top.r === 3) && (top.c === 0 || top.c === 3));
+    const onEdge = top.level > 0 && (top.r === 0 || top.r === 3 || top.c === 0 || top.c === 3);
+    const focus = inCorner ? 1.18 : (onEdge ? 1.07 : 1);
+    const execution = 1 + Math.min(0.55, Math.max(0, S.executionStreak) * 0.018);
+    const multiple = roundTo(round * focus * execution, 2);
+    const netWorthM = Math.floor(S.score * multiple);
+    return { capitalM: Math.floor(S.score), bestTileM: top.valueM, multiple, netWorthM, focus, execution };
   }
 
   function cleanGameId(id){
@@ -786,7 +847,7 @@ const Trillion = (() => {
   }
   function updateGameMeta(){
     const code = document.getElementById('tr-game-code');
-    if(code) code.textContent = S.gameId ? `GAME ${S.gameId.slice(-6).toUpperCase()} · SAVED` : 'GAME —';
+    if(code) code.textContent = S.gameId ? `${playerName()} · GAME ${S.gameId.slice(-6).toUpperCase()} · SAVED` : 'GAME —';
   }
   function gameStorageKey(id = S.gameId){ return GAME_PREFIX + id; }
   function rememberGame(id, ts){
@@ -821,6 +882,7 @@ const Trillion = (() => {
         score: Math.max(0, Math.floor(Number(data.score) || 0)),
         moves: Math.max(0, Math.floor(Number(data.moves) || 0)),
         elapsedMs: Math.max(0, Math.floor(Number(data.elapsedMs) || 0)),
+        executionStreak: Math.max(0, Math.floor(Number(data.executionStreak) || 0)),
         won: !!data.won,
         keepGoing: !!data.keepGoing,
         submittedWin: !!data.submittedWin,
@@ -841,6 +903,8 @@ const Trillion = (() => {
         score: Math.floor(S.score),
         moves: Math.floor(S.moves),
         elapsedMs: Math.max(0, Math.floor(S.elapsedMs)),
+        executionStreak: Math.max(0, Math.floor(S.executionStreak)),
+        name: playerName(),
         won: !!S.won,
         keepGoing: !!S.keepGoing,
         submittedWin: !!S.submittedWin,
@@ -1023,17 +1087,18 @@ const Trillion = (() => {
     if(board) board.classList.remove('animating','dragging','snapback');
     S.grid = plan.grid;
     S.score += plan.scoreGain;
+    S.executionStreak = plan.scoreGain > 0 ? Math.min(40, S.executionStreak + 1) : Math.floor(S.executionStreak * 0.55);
     S.moves++;
     S.over = false;
-    if(S.score > S.best){ S.best = S.score; localStorage.setItem(BEST_KEY, String(S.best)); }
+    const worth = founderStats().netWorthM;
+    if(worth > S.best){ S.best = worth; localStorage.setItem(BEST_KEY, String(S.best)); }
     const spawned = spawn();
     S.spawnCells = spawned ? [spawned] : [];
     S.mergeCells = plan.mergeCells;
     render();
     S.animating = false;
     let terminal = false;
-    // Win check: the stat hits $1T long before a literal $1T tile could exist.
-    if(!S.won && !S.keepGoing && S.score >= TARGET_SCORE_M){
+    if(!S.won && !S.keepGoing && worth >= TARGET_SCORE_M){
       S.won = true;
       stopTimer();
       showWin();
@@ -1092,8 +1157,11 @@ const Trillion = (() => {
     board.innerHTML = html;
     board.appendChild(winOv);
     board.appendChild(overOv);
-    document.getElementById('tr-score').textContent = fmtMoneyM(S.score);
+    const stats = founderStats();
+    document.getElementById('tr-score').textContent = fmtMoneyM(stats.netWorthM);
     document.getElementById('tr-best').textContent = fmtMoneyM(S.best);
+    const formula = document.getElementById('tr-formula');
+    if(formula) formula.innerHTML = `${fmtMoneyM(stats.capitalM)} CAPITAL × ${stats.multiple.toFixed(2)}× FOUNDER MULTIPLE = <b>${fmtMoneyM(stats.netWorthM)}</b>`;
     updateGameMeta();
     S.spawnCells = [];
     S.mergeCells = [];
@@ -1129,7 +1197,7 @@ const Trillion = (() => {
   function hideWin(){ document.getElementById('tr-win').classList.remove('show'); }
   function showOver(opts = {}){
     S.over = true;
-    document.getElementById('tr-over-score').textContent = fmtMoneyM(S.score);
+    document.getElementById('tr-over-score').textContent = fmtMoneyM(founderStats().netWorthM);
     document.getElementById('tr-over').classList.add('show');
     if(opts.save !== false) saveGame();
   }
@@ -1145,7 +1213,7 @@ const Trillion = (() => {
     }
     S.grid = Array(4).fill().map(()=>Array(4).fill(0));
     S.score = 0; S.moves = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false; S.submittedWin = false;
-    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.over = false;
+    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.executionStreak = 0; S.over = false;
     hideWin(); hideOver();
     const a = spawn(), b = spawn();
     S.spawnCells = [a, b].filter(Boolean);
@@ -1163,6 +1231,7 @@ const Trillion = (() => {
     S.score = saved.score;
     S.moves = saved.moves;
     S.elapsedMs = saved.elapsedMs;
+    S.executionStreak = saved.executionStreak || 0;
     S.won = saved.won;
     S.keepGoing = saved.keepGoing;
     S.submittedWin = saved.submittedWin;
@@ -1180,16 +1249,40 @@ const Trillion = (() => {
   }
 
   function highestTileM(){
-    let mx = 0;
-    for(let r=0;r<4;r++) for(let c=0;c<4;c++) mx = Math.max(mx, valueForLevel(S.grid[r][c]));
-    return mx;
+    return highestTileInfo().valueM;
   }
 
   function cleanName(name){
-    return String(name || 'ANON').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0, 8) || 'ANON';
+    return String(name || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0, 8);
   }
   function playerName(){
-    return cleanName(localStorage.getItem(NAME_KEY) || 'ANON');
+    return cleanName(localStorage.getItem(NAME_KEY)) || 'ANON';
+  }
+  function hasPlayerName(){
+    return !!cleanName(localStorage.getItem(NAME_KEY));
+  }
+  function setNameGate(open){
+    const wrap = document.getElementById('tr-wrap');
+    if(wrap) wrap.classList.toggle('needs-name', !!open);
+    const input = document.getElementById('tr-name-input');
+    if(input){
+      input.value = hasPlayerName() ? playerName() : '';
+      if(open) setTimeout(()=>input.focus(), 50);
+    }
+  }
+  function saveNameFromInput(){
+    const input = document.getElementById('tr-name-input');
+    const name = cleanName(input?.value || '');
+    if(!name){
+      showToast('ENTER A NAME FIRST');
+      if(input) input.focus();
+      return false;
+    }
+    localStorage.setItem(NAME_KEY, name);
+    setNameGate(false);
+    updateGameMeta();
+    renderLeaderboard();
+    return true;
   }
   function localRuns(){
     try{
@@ -1198,7 +1291,7 @@ const Trillion = (() => {
     }catch(e){ return []; }
   }
   function validRun(r){
-    return r && Number.isFinite(r.scoreM) && Number.isFinite(r.elapsedMs) && Number.isFinite(r.moves) && r.scoreM >= TARGET_SCORE_M;
+    return r && cleanName(r.name) && Number.isFinite(r.scoreM) && Number.isFinite(r.elapsedMs) && Number.isFinite(r.moves) && r.scoreM >= TARGET_SCORE_M;
   }
   function sortRuns(runs){
     return runs.slice().sort((a,b)=>(a.elapsedMs-b.elapsedMs) || (a.moves-b.moves) || (b.scoreM-a.scoreM)).slice(0, 10);
@@ -1218,7 +1311,7 @@ const Trillion = (() => {
     el.innerHTML = rows.map((r,i)=>`
       <div class="tr-leader-row">
         <span>#${i+1}</span>
-        <b>${cleanName(r.name)}</b>
+        <b>${cleanName(r.name) || 'ANON'}</b>
         <span class="time">${fmtTime(r.elapsedMs)}</span>
         <span>${fmtMoneyM(r.scoreM)}</span>
       </div>
@@ -1237,10 +1330,13 @@ const Trillion = (() => {
   async function submitRun(){
     if(S.submittedWin) return;
     S.submittedWin = true;
+    const stats = founderStats();
     const run = {
       name: playerName(),
-      scoreM: Math.floor(S.score),
-      bestTileM: Math.floor(highestTileM()),
+      scoreM: stats.netWorthM,
+      capitalM: stats.capitalM,
+      founderMultiple: stats.multiple,
+      bestTileM: Math.floor(stats.bestTileM),
       elapsedMs: Math.max(1, Math.floor(S.elapsedMs)),
       moves: S.moves,
       ts: Date.now(),
@@ -1261,9 +1357,12 @@ const Trillion = (() => {
     }catch(e){}
   }
   function setName(){
-    const n = prompt('Leaderboard name', playerName());
+    const n = prompt('Leaderboard name', hasPlayerName() ? playerName() : '');
     if(n == null) return;
-    localStorage.setItem(NAME_KEY, cleanName(n));
+    const name = cleanName(n);
+    if(!name){ showToast('NAME REQUIRED BEFORE PLAY'); setNameGate(true); return; }
+    localStorage.setItem(NAME_KEY, name);
+    updateGameMeta();
     showToast('LEADERBOARD NAME: '+playerName());
   }
   function burst(){
@@ -1290,6 +1389,15 @@ const Trillion = (() => {
     if(S.boundKey) return;
     const board = document.getElementById('tr-board');
     if(!board) return;
+    const nameInput = document.getElementById('tr-name-input');
+    if(nameInput){
+      nameInput.addEventListener('keydown', e => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          startFromName();
+        }
+      });
+    }
     // Keyboard
     document.addEventListener('keydown', e => {
       if(!document.body.classList.contains('trillion-route')) return;
@@ -1382,6 +1490,15 @@ const Trillion = (() => {
     S.best = parseFloat(localStorage.getItem(BEST_KEY) || '0') || 0;
     bindInput();
     loadLeaderboard();
+    if(!hasPlayerName()){
+      setNameGate(true);
+      S.started = false;
+      return;
+    }
+    setNameGate(false);
+    beginFromRoute();
+  }
+  function beginFromRoute(){
     const id = gameIdFromUrl();
     if(id){
       const saved = savedGame(id);
@@ -1394,7 +1511,18 @@ const Trillion = (() => {
     }
     S.started = true;
   }
+  function startFromName(){
+    if(!saveNameFromInput()) return;
+    if(!S.started) beginFromRoute();
+    else saveGame();
+  }
   function syncRoute(){
+    if(!hasPlayerName()){
+      stopTimer();
+      setNameGate(true);
+      S.started = false;
+      return;
+    }
     const id = gameIdFromUrl();
     if(!id){
       if(S.gameId) setGameUrl('replace');
@@ -1411,12 +1539,14 @@ const Trillion = (() => {
     reset,
     syncRoute,
     url: gamePath,
+    startFromName,
     keep(){ S.keepGoing = true; hideWin(); startTimer(); saveGame(); },
     copyLink: copyLink,
     share(){
       saveGame();
       const href = absoluteGameUrl();
-      const txt = `I merged $1T from $1M tiles in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\n${href}`;
+      const stats = founderStats();
+      const txt = `I compounded ${fmtMoneyM(stats.capitalM)} capital into ${fmtMoneyM(stats.netWorthM)} at ${stats.multiple.toFixed(2)}× in ${fmtTime(S.elapsedMs)} (${S.moves} moves).\nElon took 54 years.\n${href}`;
       if(navigator.share && /Mobi|Android/i.test(navigator.userAgent)){
         navigator.share({ title:"I made a trillion", text: txt, url:href }).catch(()=>{});
         return;
@@ -1434,6 +1564,7 @@ function resetTrillion(){ Trillion.reset(); }
 function keepMerging(){ Trillion.keep(); }
 function shareTrillion(){ Trillion.share(); }
 function setTrillionName(){ Trillion.setName(); }
+function startTrillionFromName(){ Trillion.startFromName(); }
 function copyTrillionLink(){ Trillion.copyLink(); }
 
 function populateMath(){

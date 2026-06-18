@@ -58,6 +58,8 @@ check "chart defaults to 1D with no NOW tab" bash -c "grep -q 'class=\"active\" 
 check "trillion game uses smooth tile layer" bash -c "grep -q '\\.tr-tile' www/index.html && grep -q 'pointerdown' www/index.html && grep -q 'animating' www/index.html"
 check "trillion game has native-style slide/pop hooks" bash -c "grep -q 'trTilePop' www/index.html && grep -q 'trAppear' www/index.html && grep -q 'drag-source' www/index.html && grep -q -- '--tile-drag-x' www/index.html"
 check "trillion game persists per-game URLs" bash -c "grep -q 'ew_trillion_game_v1_' www/index.html && grep -q 'URLSearchParams(location.search).get('\\''game'\\'')' www/index.html && grep -q 'copyTrillionLink' www/index.html"
+check "trillion game requires leaderboard name" bash -c "grep -q 'CLAIM YOUR RUN' www/index.html && grep -q 'startTrillionFromName' www/index.html && grep -q 'NAME REQUIRED BEFORE PLAY' www/index.html"
+check "trillion game compounds founder multiple" bash -c "grep -q 'founderStats' www/index.html && grep -q 'FOUNDER MULTIPLE' www/index.html && grep -q 'executionStreak' www/index.html"
 
 # 6. Worker TS compiles
 if [ ! -x worker/node_modules/.bin/tsc ]; then

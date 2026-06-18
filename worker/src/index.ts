@@ -256,6 +256,8 @@ type TrillionRun = {
   id?: string;
   name: string;
   scoreM: number;
+  capitalM?: number;
+  founderMultiple?: number;
   bestTileM: number;
   elapsedMs: number;
   moves: number;
@@ -263,7 +265,7 @@ type TrillionRun = {
   country?: string;
 };
 
-const TRILLION_LEADERBOARD_KEY = "trillion:leaderboard:v2";
+const TRILLION_LEADERBOARD_KEY = "trillion:leaderboard:v3";
 const TRILLION_TARGET_SCORE_M = 1_000_000;
 
 function json(data: unknown, init: ResponseInit = {}): Response {
@@ -277,16 +279,18 @@ function json(data: unknown, init: ResponseInit = {}): Response {
 }
 
 function cleanRunName(name: unknown): string {
-  const cleaned = String(name || "ANON").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
-  return cleaned || "ANON";
+  return String(name || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
 }
 
 function validTrillionRun(run: any): run is TrillionRun {
   return run
+    && cleanRunName(run.name)
     && Number.isFinite(run.scoreM)
     && Number.isFinite(run.bestTileM)
     && Number.isFinite(run.elapsedMs)
     && Number.isFinite(run.moves)
+    && (run.capitalM == null || (Number.isFinite(run.capitalM) && run.capitalM >= 0 && run.capitalM <= run.scoreM))
+    && (run.founderMultiple == null || (Number.isFinite(run.founderMultiple) && run.founderMultiple >= 1 && run.founderMultiple <= 50))
     && run.scoreM >= TRILLION_TARGET_SCORE_M
     && run.scoreM <= 100_000_000
     && run.bestTileM >= 1
@@ -368,6 +372,8 @@ export default {
             id: crypto.randomUUID(),
             name: cleanRunName(body.name),
             scoreM: Math.floor(Number(body.scoreM)),
+            capitalM: body.capitalM == null ? undefined : Math.floor(Number(body.capitalM)),
+            founderMultiple: body.founderMultiple == null ? undefined : Math.round(Number(body.founderMultiple) * 100) / 100,
             bestTileM: Math.floor(Number(body.bestTileM)),
             elapsedMs: Math.floor(Number(body.elapsedMs)),
             moves: Math.floor(Number(body.moves)),
