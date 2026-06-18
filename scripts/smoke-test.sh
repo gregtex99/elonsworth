@@ -61,6 +61,7 @@ check "trillion game persists per-game URLs" bash -c "grep -q 'ew_trillion_game_
 check "trillion game requires leaderboard name" bash -c "grep -q 'CLAIM YOUR RUN' www/index.html && grep -q 'startTrillionFromName' www/index.html && grep -q 'NAME REQUIRED BEFORE PLAY' www/index.html"
 check "trillion game compounds founder multiple" bash -c "grep -q 'founderStats' www/index.html && grep -q 'FOUNDER MULTIPLE' www/index.html && grep -q 'executionStreak' www/index.html"
 check "trillion game shows tranche and payout economy" bash -c "grep -q 'TRANCHE UNLOCKED' www/index.html && grep -q 'LAST JOIN' www/index.html && grep -q 'tr-ladder' www/index.html"
+check "trillion game has stable economy HUD" bash -c "grep -q 'tr-factor-grid' www/index.html && grep -q 'tr-next-progress' www/index.html && grep -q 'tr-last-detail' www/index.html && grep -q 'lastJoinValueM' www/index.html"
 
 # 6. Worker TS compiles
 if [ ! -x worker/node_modules/.bin/tsc ]; then

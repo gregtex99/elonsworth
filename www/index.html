@@ -137,7 +137,7 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 body.trillion-route #app-shell{display:none}
 body.trillion-route #math-page{display:none}
 body.trillion-route #trillion-page{display:block}
-.tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg)}
+.tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg);font-variant-numeric:tabular-nums}
 .tr-wrap.needs-name .tr-stats,.tr-wrap.needs-name .tr-formula,.tr-wrap.needs-name .tr-econ,.tr-wrap.needs-name .tr-board,.tr-wrap.needs-name .tr-help,.tr-wrap.needs-name .tr-save,.tr-wrap.needs-name .tr-foot{display:none}
 .tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
 .tr-top a{color:var(--fg-dim);text-decoration:none}
@@ -156,14 +156,34 @@ body.trillion-route #trillion-page{display:block}
 .tr-stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:#6A6A72}
 .tr-stat .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:3px}
 .tr-stat .v.cur{color:var(--green)}
-.tr-formula{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6A6A72;margin-top:10px;line-height:1.45;text-align:center}
-.tr-formula b{color:var(--green);font-weight:500}
+.tr-formula{display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;align-items:stretch;gap:5px;margin-top:10px;font-family:'IBM Plex Mono',monospace;text-align:center}
+.tr-formula .box{min-width:0;background:#08080C;border:1px solid #202027;border-radius:9px;padding:7px 5px}
+.tr-formula .k{display:block;font-size:7.5px;letter-spacing:1.6px;color:#5F5F66;white-space:nowrap}
+.tr-formula .val{display:block;margin-top:3px;font-size:11px;color:#BEBEC6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-formula .result .val{color:var(--green)}
+.tr-formula .op{display:flex;align-items:center;justify-content:center;color:#5F5F66;font-size:12px}
 .tr-econ{margin-top:10px;background:var(--pill-bg);border:1px solid var(--line-2);border-radius:12px;padding:10px;font-family:'IBM Plex Mono',monospace}
-.tr-econ-main{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;letter-spacing:1.3px;color:#7A7A82}
-.tr-econ-main b{color:var(--green);font-weight:500;text-align:right}
-.tr-econ-detail{font-size:9px;color:#5F5F66;line-height:1.55;margin-top:7px}
+.tr-econ-head{display:grid;grid-template-columns:1fr 132px;gap:10px;align-items:stretch}
+.tr-econ-kicker{font-size:7.5px;letter-spacing:2px;color:#5F5F66}
+.tr-econ-title{min-height:44px;margin-top:5px;background:#08080C;border:1px solid #202027;border-radius:9px;padding:8px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.tr-econ-title span{font-size:11px;color:var(--fg);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-econ-title b{font-size:9px;color:#7A7A82;font-weight:500}
+.tr-payout{min-height:62px;background:rgba(0,255,133,.06);border:1px solid rgba(0,255,133,.18);border-radius:9px;padding:8px;text-align:right;display:flex;flex-direction:column;justify-content:center}
+.tr-payout span{font-size:7.5px;letter-spacing:1.6px;color:#5F5F66}
+.tr-payout b{margin-top:4px;color:var(--green);font-size:15px;font-weight:500;white-space:nowrap}
+.tr-payout small{margin-top:3px;color:#6A6A72;font-size:7.5px;line-height:1.25;min-height:18px}
+.tr-factor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.tr-factor{background:#08080C;border:1px solid #202027;border-radius:8px;padding:7px 6px;text-align:center;min-width:0}
+.tr-factor span{display:block;font-size:7px;letter-spacing:1.4px;color:#5A5A62;white-space:nowrap}
+.tr-factor b{display:block;margin-top:3px;font-size:11px;color:#BEBEC6;font-weight:500;white-space:nowrap}
+.tr-next{margin-top:8px}
+.tr-next-row{display:flex;justify-content:space-between;gap:10px;font-size:8px;letter-spacing:1.2px;color:#5F5F66}
+.tr-next-row b{font-weight:500;color:#A8A8B0;text-align:right;white-space:nowrap}
+.tr-progress{height:7px;margin-top:6px;background:#08080C;border:1px solid #202027;border-radius:999px;overflow:hidden}
+.tr-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00A95F,#00FF85);border-radius:999px;transition:width 160ms ease}
 .tr-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:9px}
 .tr-ladder span{height:18px;border:1px solid #24242A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:7.5px;color:#5F5F66;background:#08080C;white-space:nowrap;overflow:hidden}
+.tr-ladder span.done{border-color:rgba(0,255,133,.2);color:#7FDBA9;background:rgba(0,255,133,.04)}
 .tr-ladder span.on{border-color:rgba(0,255,133,.65);color:var(--green);background:rgba(0,255,133,.08)}
 .tr-ladder span.next{border-color:rgba(255,255,255,.25);color:#A8A8B0}
 .tr-board{position:relative;margin-top:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;touch-action:none;cursor:grab;outline:none;user-select:none;aspect-ratio:1;overflow:hidden}
@@ -195,8 +215,8 @@ body.trillion-route #trillion-page{display:block}
 .tr-help{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;margin-top:12px;text-align:center}
 .tr-save{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.2px;color:#6A6A72}
 .tr-save button{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid #2A2A30;background:transparent;color:var(--fg-dim);border-radius:8px;padding:7px 9px;cursor:pointer}
-.tr-unlock{display:none;margin-top:10px;border:1px solid rgba(0,255,133,.5);background:rgba(0,255,133,.08);border-radius:10px;padding:9px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;color:var(--green);text-align:center}
-.tr-unlock.show{display:block;animation:trAppear 180ms ease}
+.tr-unlock{visibility:hidden;min-height:34px;margin-top:10px;border:1px solid rgba(0,255,133,.5);background:rgba(0,255,133,.08);border-radius:10px;padding:9px 10px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;color:var(--green);text-align:center}
+.tr-unlock.show{visibility:visible;animation:trAppear 180ms ease}
 .tr-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
 .tr-foot .new{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;padding:13px 18px;border-radius:12px;border:1px solid #2A2A30;color:#8A8A90;cursor:pointer;user-select:none;background:transparent}
 .tr-foot .taunt{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5A5A62;text-align:right;line-height:1.6}
@@ -392,10 +412,37 @@ body.math-route #math-page{display:block}
       <div class="tr-stat"><div class="lbl">MULTIPLE</div><div class="v" id="tr-multiple">1.00×</div></div>
       <div class="tr-stat"><div class="lbl">PACE</div><div class="v" id="tr-time">0:00</div></div>
     </div>
-    <div class="tr-formula" id="tr-formula">$0 CAPITAL × 1.00× FOUNDER MULTIPLE = <b>$0</b></div>
+    <div class="tr-formula" id="tr-formula">
+      <div class="box"><span class="k">CAPITAL</span><span class="val" id="tr-capital">$0</span></div>
+      <div class="op">×</div>
+      <div class="box"><span class="k">MULTIPLE</span><span class="val" id="tr-formula-multiple">1.00×</span></div>
+      <div class="op">=</div>
+      <div class="box result"><span class="k">NET WORTH</span><span class="val" id="tr-formula-worth">$0</span></div>
+    </div>
     <div class="tr-econ">
-      <div class="tr-econ-main"><span id="tr-tranche">BOOTSTRAP TRANCHE</span><b id="tr-last-payout">MERGE TO GET PAID</b></div>
-      <div class="tr-econ-detail" id="tr-multiple-detail">TRANCHE 1.00× · FOCUS 1.00× · EXECUTION 1.00×</div>
+      <div class="tr-econ-head">
+        <div>
+          <div class="tr-econ-kicker">FOUNDER MULTIPLE</div>
+          <div class="tr-econ-title">
+            <span id="tr-tranche">BOOTSTRAP</span>
+            <b id="tr-tranche-base">1.00× BASE</b>
+          </div>
+        </div>
+        <div class="tr-payout">
+          <span>LAST JOIN</span>
+          <b id="tr-last-payout">$0</b>
+          <small id="tr-last-detail">CURRENT MULTIPLE APPLIES</small>
+        </div>
+      </div>
+      <div class="tr-factor-grid" id="tr-multiple-detail">
+        <div class="tr-factor"><span>TRANCHE</span><b id="tr-factor-tranche">1.00×</b></div>
+        <div class="tr-factor"><span>FOCUS</span><b id="tr-factor-focus">1.00×</b></div>
+        <div class="tr-factor"><span>EXECUTION</span><b id="tr-factor-execution">1.00×</b></div>
+      </div>
+      <div class="tr-next">
+        <div class="tr-next-row"><span>NEXT TRANCHE</span><b id="tr-next-label">SEED @ $1B TILE</b></div>
+        <div class="tr-progress"><i id="tr-next-progress"></i></div>
+      </div>
       <div class="tr-ladder" id="tr-ladder"></div>
     </div>
     <div class="tr-board" id="tr-board" tabindex="0">
@@ -786,6 +833,8 @@ const Trillion = (() => {
     executionStreak: 0,
     lastMergeM: 0,
     lastPayoutM: 0,
+    lastJoinValueM: 0,
+    lastRepriceM: 0,
     lastMultiple: 1,
     gameId: '',
     over: false,
@@ -853,34 +902,48 @@ const Trillion = (() => {
   function showTrancheUnlock(tranche, next){
     const el = document.getElementById('tr-unlock');
     if(!el) return;
-    el.textContent = `TRANCHE UNLOCKED: ${tranche.name} · BASE ${tranche.base.toFixed(2)}×${next ? ` · NEXT ${next.name} AT ${fmtMoneyM(next.tileM)} TILE` : ' · TOP TRANCHE'}`;
+    el.textContent = `TRANCHE UNLOCKED: ${tranche.name} · ${tranche.base.toFixed(2)}× BASE`;
     el.classList.add('show');
     clearTimeout(S.unlockTimer);
     S.unlockTimer = setTimeout(()=>el.classList.remove('show'), 3200);
   }
   function renderEconomy(stats){
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = text;
+      return el;
+    };
     const mult = document.getElementById('tr-multiple');
     if(mult) mult.textContent = `${stats.multiple.toFixed(2)}×`;
-    const formula = document.getElementById('tr-formula');
-    if(formula) formula.innerHTML = `NET WORTH = ${fmtMoneyM(stats.capitalM)} CAPITAL × ${stats.multiple.toFixed(2)}× MULTIPLE = <b>${fmtMoneyM(stats.netWorthM)}</b>`;
-    const tranche = document.getElementById('tr-tranche');
-    if(tranche) tranche.textContent = `${stats.tranche.name} TRANCHE · ${stats.tranche.base.toFixed(2)}× BASE`;
-    const last = document.getElementById('tr-last-payout');
-    if(last){
-      if(S.lastMergeM > 0) last.textContent = `LAST JOIN +${fmtMoneyM(S.lastPayoutM)}`;
-      else if(S.moves > 0) last.textContent = 'NO DEAL · STREAK CUT';
-      else last.textContent = 'MERGE TO GET PAID';
-    }
-    const detail = document.getElementById('tr-multiple-detail');
-    if(detail){
-      const lastText = S.lastMergeM > 0 ? `LAST ${fmtMoneyM(S.lastMergeM)} JOIN @ ${S.lastMultiple.toFixed(2)}×` : 'EACH JOIN PAYS THROUGH THE CURRENT MULTIPLE';
-      const nextText = stats.next ? `NEXT ${stats.next.name}: ${fmtMoneyM(stats.next.tileM)} TILE → ${stats.next.base.toFixed(2)}× BASE` : 'ALL TRANCHES UNLOCKED';
-      detail.textContent = `TRANCHE ${stats.tranche.base.toFixed(2)}× · FOCUS ${stats.focus.toFixed(2)}× · EXECUTION ${stats.execution.toFixed(2)}× · ${lastText} · ${nextText}`;
+    setText('tr-capital', fmtMoneyM(stats.capitalM));
+    setText('tr-formula-multiple', `${stats.multiple.toFixed(2)}×`);
+    setText('tr-formula-worth', fmtMoneyM(stats.netWorthM));
+    setText('tr-tranche', stats.tranche.name);
+    setText('tr-tranche-base', `${stats.tranche.base.toFixed(2)}× BASE`);
+    setText('tr-factor-tranche', `${stats.tranche.base.toFixed(2)}×`);
+    setText('tr-factor-focus', `${stats.focus.toFixed(2)}×`);
+    setText('tr-factor-execution', `${stats.execution.toFixed(2)}×`);
+    if(stats.next) setText('tr-next-label', `${stats.next.short} @ ${fmtMoneyM(stats.next.tileM)} TILE`);
+    else setText('tr-next-label', 'TOP TRANCHE');
+    const progress = stats.next
+      ? Math.max(0, Math.min(1, (stats.bestTileM - stats.tranche.tileM) / Math.max(1, stats.next.tileM - stats.tranche.tileM)))
+      : 1;
+    const progressBar = document.getElementById('tr-next-progress');
+    if(progressBar) progressBar.style.width = `${Math.max(stats.next ? 3 : 100, Math.round(progress * 100))}%`;
+    if(S.lastMergeM > 0){
+      setText('tr-last-payout', `+${fmtMoneyM(S.lastPayoutM)}`);
+      setText('tr-last-detail', `${fmtMoneyM(S.lastMergeM)} × ${S.lastMultiple.toFixed(2)} = ${fmtMoneyM(S.lastJoinValueM)}${S.lastRepriceM > 0 ? ' + REPRICE' : ''}`);
+    } else if(S.moves > 0){
+      setText('tr-last-payout', 'NO DEAL');
+      setText('tr-last-detail', 'STREAK DECAYED');
+    } else {
+      setText('tr-last-payout', '$0');
+      setText('tr-last-detail', 'JOIN PAYOUT USES MULTIPLE');
     }
     const ladder = document.getElementById('tr-ladder');
     if(ladder){
       ladder.innerHTML = TRANCHE_DEFS.map((t, i) => {
-        const cls = i === stats.tranche.index ? 'on' : (stats.next && i === stats.next.index ? 'next' : '');
+        const cls = i < stats.tranche.index ? 'done' : (i === stats.tranche.index ? 'on' : (stats.next && i === stats.next.index ? 'next' : ''));
         return `<span class="${cls}">${t.short}</span>`;
       }).join('');
     }
@@ -956,6 +1019,8 @@ const Trillion = (() => {
         executionStreak: Math.max(0, Math.floor(Number(data.executionStreak) || 0)),
         lastMergeM: Math.max(0, Math.floor(Number(data.lastMergeM) || 0)),
         lastPayoutM: Math.max(0, Math.floor(Number(data.lastPayoutM) || 0)),
+        lastJoinValueM: Math.max(0, Math.floor(Number(data.lastJoinValueM) || 0)),
+        lastRepriceM: Math.max(0, Math.floor(Number(data.lastRepriceM) || 0)),
         lastMultiple: Math.max(1, Number(data.lastMultiple) || 1),
         won: !!data.won,
         keepGoing: !!data.keepGoing,
@@ -980,6 +1045,8 @@ const Trillion = (() => {
         executionStreak: Math.max(0, Math.floor(S.executionStreak)),
         lastMergeM: Math.max(0, Math.floor(S.lastMergeM)),
         lastPayoutM: Math.max(0, Math.floor(S.lastPayoutM)),
+        lastJoinValueM: Math.max(0, Math.floor(S.lastJoinValueM)),
+        lastRepriceM: Math.max(0, Math.floor(S.lastRepriceM)),
         lastMultiple: roundTo(S.lastMultiple || 1, 2),
         name: playerName(),
         won: !!S.won,
@@ -1172,6 +1239,8 @@ const Trillion = (() => {
     const worth = after.netWorthM;
     S.lastMergeM = plan.scoreGain;
     S.lastPayoutM = Math.max(0, worth - before.netWorthM);
+    S.lastJoinValueM = plan.scoreGain > 0 ? Math.floor(plan.scoreGain * after.multiple) : 0;
+    S.lastRepriceM = Math.max(0, S.lastPayoutM - S.lastJoinValueM);
     S.lastMultiple = after.multiple;
     if(worth > S.best){ S.best = worth; localStorage.setItem(BEST_KEY, String(S.best)); }
     if(after.tranche.index > before.tranche.index) showTrancheUnlock(after.tranche, after.next);
@@ -1296,7 +1365,7 @@ const Trillion = (() => {
     }
     S.grid = Array(4).fill().map(()=>Array(4).fill(0));
     S.score = 0; S.moves = 0; S.elapsedMs = 0; S.won = false; S.keepGoing = false; S.submittedWin = false;
-    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.executionStreak = 0; S.lastMergeM = 0; S.lastPayoutM = 0; S.lastMultiple = 1; S.over = false;
+    S.animating = false; S.spawnCells = []; S.mergeCells = []; S.executionStreak = 0; S.lastMergeM = 0; S.lastPayoutM = 0; S.lastJoinValueM = 0; S.lastRepriceM = 0; S.lastMultiple = 1; S.over = false;
     hideWin(); hideOver();
     const a = spawn(), b = spawn();
     S.spawnCells = [a, b].filter(Boolean);
@@ -1317,6 +1386,8 @@ const Trillion = (() => {
     S.executionStreak = saved.executionStreak || 0;
     S.lastMergeM = saved.lastMergeM || 0;
     S.lastPayoutM = saved.lastPayoutM || 0;
+    S.lastJoinValueM = saved.lastJoinValueM || 0;
+    S.lastRepriceM = saved.lastRepriceM || 0;
     S.lastMultiple = saved.lastMultiple || 1;
     S.won = saved.won;
     S.keepGoing = saved.keepGoing;
