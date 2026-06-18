@@ -138,6 +138,7 @@ body.trillion-route #app-shell{display:none}
 body.trillion-route #math-page{display:none}
 body.trillion-route #trillion-page{display:block}
 .tr-wrap{max-width:520px;margin:0 auto;padding:24px 18px 40px;color:var(--fg);font-variant-numeric:tabular-nums}
+.tr-wrap *{box-sizing:border-box}
 .tr-wrap.needs-name .tr-stats,.tr-wrap.needs-name .tr-formula,.tr-wrap.needs-name .tr-econ,.tr-wrap.needs-name .tr-board,.tr-wrap.needs-name .tr-help,.tr-wrap.needs-name .tr-save,.tr-wrap.needs-name .tr-foot{display:none}
 .tr-top{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg-dim)}
 .tr-top a{color:var(--fg-dim);text-decoration:none}
@@ -292,6 +293,88 @@ body.math-route #math-page{display:block}
   .mobile-actions .btn{flex:1;padding:12px 14px;font-size:12.5px}
   .mobile-actions .btn.primary{flex:1.4}
   .tabs{margin-top:14px}
+  body.trillion-route{overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom);background:#050507}
+  #trillion-page{min-height:100svh}
+  .tr-wrap{width:100%;max-width:460px;min-height:100svh;padding:max(10px, env(safe-area-inset-top)) 10px max(18px, env(safe-area-inset-bottom));display:flex;flex-direction:column}
+  .tr-top{font-size:8px;letter-spacing:1.7px;min-height:12px}
+  .tr-h1{font-size:clamp(26px,8vw,34px);line-height:.95;letter-spacing:0;margin:9px 0 3px;white-space:nowrap}
+  .tr-sub{font-size:8.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tr-name-gate{margin-top:12px;padding:12px;border-radius:10px}
+  .tr-name-title{font-size:20px}
+  .tr-name-copy{font-size:9px;line-height:1.45}
+  .tr-name-row{gap:7px;margin-top:10px}
+  .tr-name-row input{padding:11px 10px;border-radius:9px;font-size:13px}
+  .tr-name-row button{min-height:43px;padding:0 12px;border-radius:9px;font-size:10px}
+  .tr-stats{gap:5px;margin-top:8px}
+  .tr-stat{padding:6px 2px;border-radius:8px;min-width:0}
+  .tr-stat .lbl{font-size:6.5px;letter-spacing:1.15px;white-space:nowrap}
+  .tr-stat .v{font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tr-formula{grid-template-columns:minmax(0,1fr) 11px minmax(52px,.62fr) 11px minmax(0,1fr);gap:3px;margin-top:6px}
+  .tr-formula .box{border-radius:8px;padding:5px 3px}
+  .tr-formula .k{font-size:6px;letter-spacing:.9px}
+  .tr-formula .val{margin-top:2px;font-size:9px}
+  .tr-formula .op{font-size:10px}
+  .tr-econ{margin-top:6px;padding:6px;border-radius:10px}
+  .tr-econ-head{grid-template-columns:minmax(0,1fr) minmax(88px,34%);gap:6px}
+  .tr-econ-kicker{font-size:6px;letter-spacing:1.3px}
+  .tr-econ-title{min-height:34px;margin-top:3px;border-radius:8px;padding:5px 6px;gap:1px}
+  .tr-econ-title span{font-size:9px;letter-spacing:.8px}
+  .tr-econ-title b{font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tr-payout{min-height:49px;border-radius:8px;padding:5px 6px}
+  .tr-payout span{font-size:6px;letter-spacing:1.2px}
+  .tr-payout b{margin-top:2px;font-size:12px;overflow:hidden;text-overflow:ellipsis}
+  .tr-payout small{min-height:12px;margin-top:2px;font-size:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tr-factor-grid{gap:4px;margin-top:5px}
+  .tr-factor{border-radius:7px;padding:4px 3px}
+  .tr-factor span{font-size:5.8px;letter-spacing:.9px}
+  .tr-factor b{margin-top:1px;font-size:9px}
+  .tr-next{margin-top:5px}
+  .tr-next-row{gap:6px;font-size:6.5px;letter-spacing:.8px}
+  .tr-progress{height:5px;margin-top:4px}
+  .tr-ladder{grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;margin-top:5px}
+  .tr-ladder span{height:14px;border-radius:4px;font-size:5.8px}
+  .tr-board{width:100%;align-self:center;margin-top:8px;padding:8px;gap:6px;border-radius:12px;flex:0 0 auto}
+  .tr-cell-bg,.tr-tile{border-radius:7px}
+  .tr-overlay{border-radius:12px;padding:18px}
+  .tr-overlay .big{font-size:40px}
+  .tr-overlay .him{font-size:17px}
+  .tr-overlay .why{font-size:8.5px}
+  .tr-help{margin-top:7px;font-size:7.8px;line-height:1.35}
+  .tr-unlock{order:7;min-height:28px;margin-top:7px;padding:7px 8px;border-radius:8px;font-size:7.5px;letter-spacing:.8px;line-height:1.25}
+  .tr-save{order:8;margin-top:7px;gap:6px;font-size:7.5px;letter-spacing:.8px;flex-wrap:wrap}
+  .tr-save button{padding:6px 8px;border-radius:7px;font-size:7.5px}
+  .tr-foot{order:9;margin-top:9px;gap:12px}
+  .tr-foot .new{font-size:9px;padding:10px 12px;border-radius:9px;white-space:nowrap}
+  .tr-foot .taunt{font-size:7.5px;line-height:1.35}
+  .tr-leader{order:10;margin-top:9px;padding:9px;border-radius:10px}
+  .tr-leader-head{gap:8px;font-size:7.5px;letter-spacing:1.2px}
+  .tr-leader-head button{padding:6px 7px;border-radius:7px;font-size:7px}
+  .tr-leader-list{margin-top:7px;gap:5px}
+  .tr-leader-row{grid-template-columns:20px 1fr auto auto;gap:6px;font-size:8.5px}
+  .tr-leader-note{font-size:7px;line-height:1.35;margin-top:7px}
+}
+@media (max-width:380px), (max-height:650px){
+  .tr-wrap{padding-left:9px;padding-right:9px}
+  .tr-h1{font-size:25px;margin-top:7px}
+  .tr-sub{display:none}
+  .tr-stats{margin-top:7px}
+  .tr-stat{padding:5px 2px}
+  .tr-stat .lbl{font-size:5.8px;letter-spacing:.8px}
+  .tr-stat .v{font-size:10px}
+  .tr-formula{margin-top:5px}
+  .tr-formula .box{padding:4px 2px}
+  .tr-formula .k{font-size:5.5px;letter-spacing:.6px}
+  .tr-formula .val{font-size:8px}
+  .tr-econ{margin-top:5px;padding:5px}
+  .tr-econ-title{min-height:30px;padding:4px 5px}
+  .tr-payout{min-height:41px;padding:4px 5px}
+  .tr-payout small{display:none}
+  .tr-factor-grid{gap:3px;margin-top:4px}
+  .tr-factor{padding:3px 2px}
+  .tr-next,.tr-ladder{display:none}
+  .tr-board{margin-top:6px;padding:7px;gap:5px}
+  .tr-help{display:none}
+  .tr-unlock{min-height:25px;margin-top:6px;padding:6px;font-size:7px}
 }
 </style>
 </head>

@@ -62,6 +62,7 @@ check "trillion game requires leaderboard name" bash -c "grep -q 'CLAIM YOUR RUN
 check "trillion game compounds founder multiple" bash -c "grep -q 'founderStats' www/index.html && grep -q 'FOUNDER MULTIPLE' www/index.html && grep -q 'executionStreak' www/index.html"
 check "trillion game shows tranche and payout economy" bash -c "grep -q 'TRANCHE UNLOCKED' www/index.html && grep -q 'LAST JOIN' www/index.html && grep -q 'tr-ladder' www/index.html"
 check "trillion game has stable economy HUD" bash -c "grep -q 'tr-factor-grid' www/index.html && grep -q 'tr-next-progress' www/index.html && grep -q 'tr-last-detail' www/index.html && grep -q 'lastJoinValueM' www/index.html"
+check "trillion game has compact mobile cockpit" bash -c "grep -q 'body.trillion-route{overflow-x:hidden' www/index.html && grep -q '@media (max-width:380px), (max-height:650px)' www/index.html && grep -q '.tr-board{width:100%;align-self:center' www/index.html"
 
 # 6. Worker TS compiles
 if [ ! -x worker/node_modules/.bin/tsc ]; then
