@@ -855,6 +855,8 @@ function share(){
     `${fmtMoneyPrecise(n)} and counting → elonsworth.com`,
     `Elon is worth ${fmtMoneyPrecise(n)} right now → elonsworth.com`,
     `Watch a trillionaire tick: ${fmtMoneyPrecise(n)} → elonsworth.com`,
+    `In 2008 Tesla had $9.3M cash. Now Elon is worth ${fmtMoneyPrecise(n)} → elonsworth.com`,
+    `From a 2008 near-death scramble to ${fmtMoneyPrecise(n)} live net worth → elonsworth.com`,
   ];
   const v = state.shareVariant ?? (state.shareVariant = Math.floor(Math.random() * variants.length));
   const txt = variants[v];
