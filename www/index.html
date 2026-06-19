@@ -128,6 +128,24 @@ body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%, var(--bg-1)
 .lockup-bar > div{height:100%;background:#FFB300;animation:ewPulse 1.6s ease-in-out infinite}
 .lockup-meta{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6A6A72;margin-top:10px}
 
+/* source-backed story strip */
+.fact-strip{margin-top:34px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(0,255,133,.055),rgba(255,255,255,.018));padding:20px}
+.fact-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+.fact-kicker{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--green)}
+.fact-head strong{display:block;margin-top:8px;font-size:22px;line-height:1.05}
+.fact-head p{margin:8px 0 0;color:#9C9CA4;font-size:13.5px;line-height:1.55;max-width:780px}
+.fact-answer{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:#FFB300;border:1px solid rgba(255,179,0,.28);border-radius:999px;padding:7px 10px;white-space:nowrap;background:rgba(255,179,0,.06)}
+.fact-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.fact-card{min-height:142px;border:1px solid var(--line-2);border-radius:12px;background:#08080C;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+.fact-card .l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:#6A6A72}
+.fact-card .n{font-family:'Archivo Black',sans-serif;font-size:28px;line-height:.95;color:var(--fg)}
+.fact-card.warn .n{color:#FFB300}
+.fact-card.good .n{color:var(--green)}
+.fact-card p{margin:0;color:#8A8A92;font-size:12.5px;line-height:1.42}
+.fact-sources{display:flex;flex-wrap:wrap;gap:12px;margin-top:15px;font-family:'IBM Plex Mono',monospace;font-size:10.5px}
+.fact-sources a{color:var(--green);text-decoration:none;border-bottom:1px solid #1E5A3A}
+.fact-sources a:hover{border-color:var(--green)}
+
 .footer{margin-top:42px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--fg-mute);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .footer a{color:var(--fg-dim);text-decoration:none}
 
@@ -256,6 +274,10 @@ body.math-route #math-page{display:block}
 .math-source-row a:hover{border-color:var(--green)}
 .math-fineprint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5A5A62;margin-top:28px;line-height:1.7;letter-spacing:.5px}
 .math-formula-box{background:#0A0A0C;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C5C5CB;line-height:1.65;overflow-x:auto;margin-top:14px}
+.math-fact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.math-fact{border:1px solid var(--line);border-radius:10px;background:#0A0A0C;padding:13px}
+.math-fact b{display:block;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--green);font-weight:600}
+.math-fact span{display:block;margin-top:6px;color:#8A8A92;font-size:12.5px;line-height:1.5}
 
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:all .25s ease;z-index:1001;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -281,6 +303,10 @@ body.math-route #math-page{display:block}
   body{padding-bottom:env(safe-area-inset-bottom)}
   .hero-grid{grid-template-columns:1fr;gap:24px}
   .hero-number{font-size:clamp(46px,15vw,80px)}
+  .fact-head{grid-template-columns:1fr}
+  .fact-answer{justify-self:start}
+  .fact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .math-fact-grid{grid-template-columns:1fr}
   .nav-right .btn{display:none}     /* hide nav buttons — use bottom row */
   .rail{order:2}
   .ath-num{font-size:30px}
@@ -289,7 +315,8 @@ body.math-route #math-page{display:block}
   /* Holding rows: prevent text wrapping mid-number */
   .holding-val{white-space:nowrap;flex-shrink:0}
   .holding-val .v{white-space:nowrap}
-  .mobile-actions{display:flex;gap:10px;position:fixed;left:10px;right:10px;bottom:max(10px, env(safe-area-inset-bottom));z-index:50;padding:10px;background:rgba(8,8,12,.94);backdrop-filter:blur(14px) saturate(140%);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px -12px rgba(0,0,0,.6)}
+  .mobile-actions{display:flex;gap:10px;position:fixed;left:10px;right:10px;bottom:max(10px, env(safe-area-inset-bottom));z-index:50;padding:10px;background:rgba(8,8,12,.94);backdrop-filter:blur(14px) saturate(140%);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px -12px rgba(0,0,0,.6);opacity:0;transform:translateY(calc(100% + 18px));pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+  .mobile-actions.is-visible{opacity:1;transform:translateY(0);pointer-events:auto}
   .mobile-actions .btn{flex:1;padding:12px 14px;font-size:12.5px}
   .mobile-actions .btn.primary{flex:1.4}
   .tabs{margin-top:14px}
@@ -354,6 +381,9 @@ body.math-route #math-page{display:block}
   .tr-leader-note{font-size:7px;line-height:1.35;margin-top:7px}
 }
 @media (max-width:380px), (max-height:650px){
+  .fact-strip{padding:14px}
+  .fact-grid{grid-template-columns:1fr}
+  .fact-card{min-height:auto}
   .tr-wrap{padding-left:9px;padding-right:9px}
   .tr-h1{font-size:25px;margin-top:7px}
   .tr-sub{display:none}
@@ -463,6 +493,45 @@ body.math-route #math-page{display:block}
     </aside>
   </div>
 
+  <section class="fact-strip" id="near-death-fact">
+    <div class="fact-head">
+      <div>
+        <div class="fact-kicker">2008 LOW POINT · VERIFIED</div>
+        <strong>Yes, the near-bankruptcy story is real. Now it is part of the data.</strong>
+        <p>Not personal bankruptcy in a court filing. The accurate version: in 2008 Tesla and SpaceX were near-dead, Musk told 60 Minutes he was broke and in debt, Tesla had only $9.3M cash at year-end, and the rescue came from emergency Tesla debt plus SpaceX winning NASA cargo work.</p>
+      </div>
+      <div class="fact-answer">ANSWER: TRUE, WITH NUANCE</div>
+    </div>
+    <div class="fact-grid">
+      <article class="fact-card warn">
+        <div class="l">TESLA CASH · 2008</div>
+        <div class="n">$9.3M</div>
+        <p>Cash and cash equivalents at Dec 31, 2008 in Tesla's IPO S-1.</p>
+      </article>
+      <article class="fact-card warn">
+        <div class="l">TESLA LOSS · 2008</div>
+        <div class="n">$82.8M</div>
+        <p>Net loss in 2008 while Roadster production and Model S plans were still fragile.</p>
+      </article>
+      <article class="fact-card good">
+        <div class="l">SPACEX LIFELINE</div>
+        <div class="n">$1.6B</div>
+        <p>NASA CRS contract awarded in 2008 for 12 resupply missions.</p>
+      </article>
+      <article class="fact-card good">
+        <div class="l">NOW · LIVE</div>
+        <div class="n" id="then-now-current">$0</div>
+        <p id="then-now-multiple">Current live estimate, repriced by TSLA + SPCX ticks.</p>
+      </article>
+    </div>
+    <div class="fact-sources">
+      <a href="https://www.cbsnews.com/news/billionaire-elon-musk-on-2008-the-worst-year-of-my-life/" target="_blank" rel="noopener">CBS · broke and in debt</a>
+      <a href="https://www.sec.gov/Archives/edgar/data/1318605/000119312510017054/ds1.htm" target="_blank" rel="noopener">Tesla S-1 · 2008 financials</a>
+      <a href="https://oig.nasa.gov/docs/IG-13-016.pdf" target="_blank" rel="noopener">NASA OIG · $1.6B CRS award</a>
+      <a href="https://www.wired.com/2008/11/tesla-adds-40-m/" target="_blank" rel="noopener">Wired · emergency Tesla financing</a>
+    </div>
+  </section>
+
   <div class="footer">
     <span>NOT AFFILIATED WITH ELON MUSK. ESTIMATES ONLY. PUBLIC + PRIVATE VALUATIONS COMBINED. <a href="/math" onclick="openMath();return false">SEE THE MATH ↗</a></span>
     <span id="stale-note">QUOTE FRESH</span>
@@ -571,6 +640,26 @@ body.math-route #math-page{display:block}
     <div class="math-eyebrow"><a href="/" onclick="closeMath();return false">← ELONSWORTH.COM</a> /MATH</div>
     <h1 class="math-h1">Show your work.</h1>
     <div class="math-intro">Every line item, every source, every assumption. The number on the front page is the sum below — public positions repriced live, private marks pinned to their last round. Last methodology review: June 12, 2026 (SPCX IPO day).</div>
+
+    <div class="math-section" id="math-2008-low-point">
+      <div class="math-section-row">
+        <span><span class="math-section-name">2008 near-death check</span><span class="math-section-tag private">HISTORICAL · SOURCE-BACKED</span></span>
+        <span class="math-section-val static">TRUE, WITH NUANCE</span>
+      </div>
+      <div class="math-section-desc">The app now treats the 2008 story as a sourced historical fact, not a meme. The careful wording is: Musk was reportedly broke and in debt while both Tesla and SpaceX were close to failure; Tesla itself showed severe financial distress, but this is not the same as saying Musk filed for personal bankruptcy.</div>
+      <div class="math-fact-grid">
+        <div class="math-fact"><b>Tesla: $9.277M cash</b><span>Cash and cash equivalents at Dec 31, 2008 in Tesla's 2010 S-1.</span></div>
+        <div class="math-fact"><b>Tesla: $82.782M loss</b><span>Net loss for 2008 in the same S-1.</span></div>
+        <div class="math-fact"><b>Tesla: $54.7M notes</b><span>Convertible notes outstanding at Dec 31, 2008, including emergency December financing.</span></div>
+        <div class="math-fact"><b>SpaceX: $1.6B NASA CRS</b><span>NASA OIG documents the 2008 CRS award for 12 ISS resupply missions.</span></div>
+      </div>
+      <div class="math-source-row">
+        <a href="https://www.cbsnews.com/news/billionaire-elon-musk-on-2008-the-worst-year-of-my-life/" target="_blank" rel="noopener">CBS 60 Minutes recap ↗</a>
+        <a href="https://www.sec.gov/Archives/edgar/data/1318605/000119312510017054/ds1.htm" target="_blank" rel="noopener">Tesla 2010 S-1 ↗</a>
+        <a href="https://oig.nasa.gov/docs/IG-13-016.pdf" target="_blank" rel="noopener">NASA OIG CRS audit ↗</a>
+        <a href="https://www.wired.com/2008/11/tesla-adds-40-m/" target="_blank" rel="noopener">Wired Nov 2008 financing ↗</a>
+      </div>
+    </div>
 
     <!-- SpaceX -->
     <div class="math-section">
@@ -2226,6 +2315,12 @@ function paintHero(n, prev, opts){
       else if(n < prev){ hero.classList.add('flash-down'); clickAudio.tick(false); }
     }
   }
+  const thenNowCurrent = document.getElementById('then-now-current');
+  if(thenNowCurrent) thenNowCurrent.textContent = fmtMoneyPrecise(n);
+  const thenNowMultiple = document.getElementById('then-now-multiple');
+  if(thenNowMultiple) {
+    thenNowMultiple.textContent = `That is roughly ${Math.round(n / 9_277_000).toLocaleString()}x Tesla's Dec 2008 cash balance.`;
+  }
 }
 
 // Compute net worth from base data + ad-hoc TSLA/SPCX prices (used by jitter loop)
@@ -2560,6 +2655,19 @@ routeFromPath();
     mobile.style.color = main.style.color;
   });
   obs.observe(main, { characterData:true, childList:true, subtree:true, attributes:true });
+})();
+
+// Keep the first mobile viewport clean; reveal the share bar once the reader scrolls.
+(function bindMobileActions(){
+  const bar = document.getElementById('mobile-actions');
+  if(!bar) return;
+  const update = () => {
+    const show = window.matchMedia('(max-width: 720px)').matches && window.scrollY > 180 && !document.body.classList.contains('trillion-route');
+    bar.classList.toggle('is-visible', show);
+  };
+  window.addEventListener('scroll', update, { passive:true });
+  window.addEventListener('resize', update);
+  update();
 })();
 
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('math-route')) closeMath(); });

@@ -51,9 +51,10 @@ if(o!==c){console.error('script imbalance:',o,'vs',c);process.exit(1);}
 "
 
 # 5. Required IDs present in index.html
-for id in formula math-components math-page trillion-page tr-board hero live-dot live-text stale-note; do
+for id in formula math-components math-page math-2008-low-point near-death-fact then-now-current trillion-page tr-board hero live-dot live-text stale-note; do
   check "id=\"$id\" present" grep -q "id=\"$id\"" www/index.html
 done
+check "2008 near-death source facts present" bash -c 'grep -Fq "TRUE, WITH NUANCE" www/index.html && grep -Fq "9.277M cash" www/index.html && grep -Fq "NASA OIG" www/index.html'
 check "chart defaults to 1D with no NOW tab" bash -c "grep -q 'class=\"active\" data-range=\"1d\"' www/index.html && ! grep -q 'data-range=\"live\"' www/index.html && ! grep -q '>NOW</span>' www/index.html"
 check "trillion game uses smooth tile layer" bash -c "grep -q '\\.tr-tile' www/index.html && grep -q 'pointerdown' www/index.html && grep -q 'animating' www/index.html"
 check "trillion game has native-style slide/pop hooks" bash -c "grep -q 'trTilePop' www/index.html && grep -q 'trAppear' www/index.html && grep -q 'drag-source' www/index.html && grep -q -- '--tile-drag-x' www/index.html"

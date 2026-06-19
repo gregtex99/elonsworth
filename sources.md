@@ -39,6 +39,17 @@
 - Bloomberg: $1.11T (post-IPO surge of +$139B / +14.3%)
 - First verified trillionaire status
 
+## 2008 near-death story (verified 2026-06-19)
+- Accurate wording: Musk was reportedly broke/in debt and both Tesla and SpaceX were close to failure in 2008; this is not the same as saying he filed for personal bankruptcy.
+- **CBS / 60 Minutes recap:** Musk called 2008 the worst year of his life; CBS summarized that both firms were nearly dead and Musk was broke/in debt.
+  - Source: https://www.cbsnews.com/news/billionaire-elon-musk-on-2008-the-worst-year-of-my-life/
+- **Tesla 2010 S-1:** 2008 cash and cash equivalents were **$9.277M**; 2008 net loss was **$82.782M**; convertible notes outstanding at Dec 31 2008 were **$54.7M**.
+  - Source: https://www.sec.gov/Archives/edgar/data/1318605/000119312510017054/ds1.htm
+- **Tesla emergency financing coverage:** Wired reported in Nov 2008 that Tesla lined up $40M in convertible debt after cash had dwindled sharply and a prior $100M financing fell through.
+  - Source: https://www.wired.com/2008/11/tesla-adds-40-m/
+- **SpaceX lifeline:** NASA OIG documents the 2008 Commercial Resupply Services award to SpaceX as **$1.6B for 12 missions**.
+  - Source: https://oig.nasa.gov/docs/IG-13-016.pdf
+
 ## Canonical formula (final)
 ```
 LIVE_TICK = 
